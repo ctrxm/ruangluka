@@ -17,7 +17,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Home, Search, Bell, Shield, User, LogOut, Loader2, Compass } from "lucide-react";
+import { Home, Bell, Shield, User, LogOut, Loader2, Compass } from "lucide-react";
 import NotFound from "@/pages/not-found";
 import AuthPage from "@/pages/auth";
 import FeedPage from "@/pages/feed";
@@ -30,34 +30,36 @@ import PostDetailPage from "@/pages/post-detail";
 function MobileNav() {
   const [location, navigate] = useLocation();
   const { unreadCount } = useWebSocket();
+  const { user } = useAuth();
 
   const items = [
     { icon: Home, path: "/", label: "Beranda" },
     { icon: Compass, path: "/explore", label: "Jelajahi" },
     { icon: Bell, path: "/notifications", label: "Notifikasi", badge: unreadCount },
+    { icon: User, path: `/profile/${user?.username}`, label: "Profil" },
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-background/80 backdrop-blur-xl border-t border-border z-50 sm:hidden" data-testid="nav-mobile">
-      <div className="flex items-center justify-around gap-2 h-14">
+    <nav className="fixed bottom-0 left-0 right-0 bg-background/90 backdrop-blur-xl border-t border-border z-[999] sm:hidden" data-testid="nav-mobile">
+      <div className="flex items-center justify-around gap-1 h-16 px-2 max-w-lg mx-auto">
         {items.map(({ icon: Icon, path, label, badge }) => {
-          const isActive = location === path;
+          const isActive = path === "/" ? location === "/" : location.startsWith(path);
           return (
             <button
-              key={path}
-              className={`flex flex-col items-center justify-center gap-0.5 flex-1 h-full transition-colors ${isActive ? "text-primary" : "text-muted-foreground"}`}
+              key={label}
+              className={`flex flex-col items-center justify-center gap-0.5 flex-1 h-full rounded-xl transition-colors ${isActive ? "text-primary" : "text-muted-foreground"}`}
               onClick={() => navigate(path)}
               data-testid={`button-nav-${label.toLowerCase()}`}
             >
               <div className="relative">
-                <Icon className="w-5 h-5" />
+                <Icon className={`w-5 h-5 ${isActive ? "stroke-[2.5]" : ""}`} />
                 {badge ? (
-                  <span className="absolute -top-1.5 -right-2.5 w-4 h-4 rounded-full bg-destructive text-destructive-foreground text-[9px] flex items-center justify-center font-medium">
-                    {badge > 9 ? "9+" : badge}
+                  <span className="absolute -top-1.5 -right-2.5 min-w-4 h-4 rounded-full bg-destructive text-destructive-foreground text-[9px] flex items-center justify-center font-bold px-1">
+                    {badge > 99 ? "99+" : badge}
                   </span>
                 ) : null}
               </div>
-              <span className="text-[10px] font-medium">{label}</span>
+              <span className={`text-[10px] ${isActive ? "font-bold" : "font-medium"}`}>{label}</span>
             </button>
           );
         })}
@@ -74,13 +76,13 @@ function Header() {
   if (!user) return null;
 
   return (
-    <header className="sticky top-0 bg-background/80 backdrop-blur-xl border-b border-border z-50" data-testid="header">
+    <header className="sticky top-0 bg-background/90 backdrop-blur-xl border-b border-border z-[999]" data-testid="header">
       <div className="max-w-2xl mx-auto flex items-center justify-between gap-3 px-4 h-14">
         <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => navigate("/")} data-testid="link-logo">
           <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
             <img src="/images/logo.png" alt="Ruang Luka" className="w-5 h-5" />
           </div>
-          <span className="font-bold text-base hidden sm:inline gradient-text">Ruang Luka</span>
+          <span className="font-extrabold text-base hidden sm:inline gradient-text">Ruang Luka</span>
         </div>
 
         <nav className="hidden sm:flex items-center gap-1 flex-wrap" data-testid="nav-desktop">
@@ -103,7 +105,7 @@ function Header() {
                 <span className="text-xs">{label}</span>
                 {badge ? (
                   <Badge variant="destructive" className="ml-0.5 text-[9px] px-1 min-w-0 h-4">
-                    {badge > 9 ? "9+" : badge}
+                    {badge > 99 ? "99+" : badge}
                   </Badge>
                 ) : null}
               </Button>
@@ -115,14 +117,18 @@ function Header() {
           <ThemeToggle />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="rounded-full ring-2 ring-transparent hover:ring-primary/20 transition-all" data-testid="button-user-menu">
+              <button className="rounded-full ring-2 ring-transparent hover:ring-primary/30 transition-all" data-testid="button-user-menu">
                 <Avatar className="w-8 h-8">
                   <AvatarImage src={user.avatarUrl || undefined} />
-                  <AvatarFallback className="text-xs bg-primary/10 text-primary font-semibold">{user.displayName.charAt(0).toUpperCase()}</AvatarFallback>
+                  <AvatarFallback className="text-xs bg-primary/10 text-primary font-bold">{user.displayName.charAt(0).toUpperCase()}</AvatarFallback>
                 </Avatar>
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuContent align="end" className="w-52">
+              <div className="px-3 py-2 border-b border-border mb-1">
+                <p className="text-sm font-semibold truncate">{user.displayName}</p>
+                <p className="text-xs text-muted-foreground truncate">@{user.username}</p>
+              </div>
               <DropdownMenuItem onClick={() => navigate(`/profile/${user.username}`)} data-testid="menu-item-profile">
                 <User className="w-3.5 h-3.5 mr-2" /> Profil Saya
               </DropdownMenuItem>
@@ -132,7 +138,7 @@ function Header() {
                 </DropdownMenuItem>
               )}
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={logout} data-testid="menu-item-logout">
+              <DropdownMenuItem onClick={logout} className="text-destructive focus:text-destructive" data-testid="menu-item-logout">
                 <LogOut className="w-3.5 h-3.5 mr-2" /> Keluar
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -150,10 +156,13 @@ function AppRoutes() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center">
-            <img src="/images/logo.png" alt="Ruang Luka" className="w-10 h-10 animate-pulse" />
+          <div className="w-20 h-20 rounded-2xl bg-primary/10 flex items-center justify-center ring-1 ring-primary/20">
+            <img src="/images/logo.png" alt="Ruang Luka" className="w-12 h-12 animate-pulse" />
           </div>
-          <Loader2 className="w-5 h-5 animate-spin text-primary" />
+          <div className="flex flex-col items-center gap-2">
+            <Loader2 className="w-5 h-5 animate-spin text-primary" />
+            <span className="text-xs text-muted-foreground">Memuat...</span>
+          </div>
         </div>
       </div>
     );
@@ -165,7 +174,7 @@ function AppRoutes() {
 
   return (
     <WebSocketProvider>
-      <div className="min-h-screen bg-background pb-16 sm:pb-0">
+      <div className="min-h-screen bg-background pb-20 sm:pb-0">
         <Header />
         <main>
           <Switch>

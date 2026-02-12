@@ -26,7 +26,7 @@ function CommentItem({ comment }: { comment: CommentWithAuthor }) {
     <div className="flex gap-2.5 py-2.5" data-testid={`comment-item-${comment.id}`}>
       <Avatar className="w-7 h-7 flex-shrink-0 cursor-pointer" onClick={() => navigate(`/profile/${comment.author.username}`)}>
         <AvatarImage src={comment.author.avatarUrl || undefined} />
-        <AvatarFallback className="text-[10px] bg-primary/10 text-primary font-semibold">
+        <AvatarFallback className="text-[10px] bg-primary/10 text-primary font-bold">
           {comment.author.displayName.charAt(0).toUpperCase()}
         </AvatarFallback>
       </Avatar>
@@ -120,11 +120,11 @@ export function PostCard({ post, showFullComments = false }: { post: PostWithAut
   const isRepost = !!post.originalPostId;
 
   return (
-    <Card className="p-4 border border-border transition-colors" data-testid={`card-post-${post.id}`}>
+    <Card className="p-4 border border-border transition-colors hover-elevate" data-testid={`card-post-${post.id}`}>
       {isRepost && (
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-3 pl-1">
           <Repeat2 className="w-3.5 h-3.5 text-green-500" />
-          <span>{post.author?.displayName || "Seseorang"} me-repost</span>
+          <span className="font-medium">{post.author?.displayName || "Seseorang"} me-repost</span>
         </div>
       )}
 
@@ -134,7 +134,7 @@ export function PostCard({ post, showFullComments = false }: { post: PostWithAut
           onClick={() => !isAnonymous && navigate(`/profile/${isRepost ? displayPost.author?.username : authorUsername}`)}
         >
           <AvatarImage src={isRepost ? displayPost.author?.avatarUrl || undefined : authorAvatar} />
-          <AvatarFallback className="bg-primary/10 text-primary text-sm font-semibold">
+          <AvatarFallback className="bg-primary/10 text-primary text-sm font-bold">
             {isAnonymous && !isRepost ? (
               <UserCircle className="w-5 h-5 text-muted-foreground" />
             ) : (
@@ -147,7 +147,7 @@ export function PostCard({ post, showFullComments = false }: { post: PostWithAut
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
               <span
-                className={`text-sm font-semibold truncate ${!isAnonymous ? "cursor-pointer hover:underline" : ""}`}
+                className={`text-sm font-bold truncate ${!isAnonymous ? "cursor-pointer hover:underline" : ""}`}
                 onClick={() => {
                   if (isRepost && displayPost.author) navigate(`/profile/${displayPost.author.username}`);
                   else if (!isAnonymous) navigate(`/profile/${authorUsername}`);
@@ -172,8 +172,8 @@ export function PostCard({ post, showFullComments = false }: { post: PostWithAut
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => deleteMutation.mutate()} data-testid={`button-delete-post-${post.id}`}>
-                    <Trash2 className="w-3.5 h-3.5 mr-2 text-destructive" />
+                  <DropdownMenuItem onClick={() => deleteMutation.mutate()} className="text-destructive focus:text-destructive" data-testid={`button-delete-post-${post.id}`}>
+                    <Trash2 className="w-3.5 h-3.5 mr-2" />
                     Hapus
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -189,36 +189,42 @@ export function PostCard({ post, showFullComments = false }: { post: PostWithAut
             {isRepost ? displayPost.content : post.content}
           </p>
 
-          <div className="flex items-center gap-5 mt-3 pt-2">
-            <button
-              className={`flex items-center gap-1.5 text-xs transition-colors ${post.isLiked ? "text-red-500" : "text-muted-foreground"}`}
+          <div className="flex items-center gap-1 mt-3 pt-2 flex-wrap">
+            <Button
+              variant="ghost"
+              size="sm"
+              className={`gap-1.5 ${post.isLiked ? "text-red-500" : "text-muted-foreground"}`}
               onClick={() => user && likeMutation.mutate()}
               disabled={!user}
               data-testid={`button-like-${post.id}`}
             >
               <Heart className={`w-4 h-4 transition-transform ${post.isLiked ? "fill-red-500 scale-110" : ""}`} />
-              <span className="font-medium">{post.likesCount}</span>
-            </button>
+              <span className="text-xs font-medium">{post.likesCount}</span>
+            </Button>
 
-            <button
-              className="flex items-center gap-1.5 text-xs text-muted-foreground transition-colors"
+            <Button
+              variant="ghost"
+              size="sm"
+              className="gap-1.5 text-muted-foreground"
               onClick={() => setShowComments(!showComments)}
               data-testid={`button-comment-toggle-${post.id}`}
             >
               <MessageCircle className="w-4 h-4" />
-              <span className="font-medium">{post.commentsCount}</span>
-            </button>
+              <span className="text-xs font-medium">{post.commentsCount}</span>
+            </Button>
 
             {!isRepost && (
-              <button
-                className={`flex items-center gap-1.5 text-xs transition-colors ${post.isReposted ? "text-green-500" : "text-muted-foreground"}`}
+              <Button
+                variant="ghost"
+                size="sm"
+                className={`gap-1.5 ${post.isReposted ? "text-green-500" : "text-muted-foreground"}`}
                 onClick={() => user && setShowRepostConfirm(true)}
                 disabled={!user}
                 data-testid={`button-repost-${post.id}`}
               >
                 <Repeat2 className={`w-4 h-4 ${post.isReposted ? "text-green-500" : ""}`} />
-                <span className="font-medium">{post.repostsCount}</span>
-              </button>
+                <span className="text-xs font-medium">{post.repostsCount}</span>
+              </Button>
             )}
           </div>
 
@@ -242,7 +248,7 @@ export function PostCard({ post, showFullComments = false }: { post: PostWithAut
                 <div className="flex gap-2 mb-3">
                   <Avatar className="w-7 h-7 flex-shrink-0">
                     <AvatarImage src={user.avatarUrl || undefined} />
-                    <AvatarFallback className="text-[10px] bg-primary/10 text-primary font-semibold">{user.displayName.charAt(0).toUpperCase()}</AvatarFallback>
+                    <AvatarFallback className="text-[10px] bg-primary/10 text-primary font-bold">{user.displayName.charAt(0).toUpperCase()}</AvatarFallback>
                   </Avatar>
                   <div className="flex-1 flex gap-2">
                     <Textarea

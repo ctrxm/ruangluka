@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Send, UserCircle, Loader2 } from "lucide-react";
+import { Send, UserCircle, Loader2, EyeOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export function CreatePost() {
@@ -47,7 +47,7 @@ export function CreatePost() {
           ) : (
             <>
               <AvatarImage src={user.avatarUrl || undefined} />
-              <AvatarFallback className="bg-primary/10 text-primary text-sm font-semibold">{user.displayName.charAt(0).toUpperCase()}</AvatarFallback>
+              <AvatarFallback className="bg-primary/10 text-primary text-sm font-bold">{user.displayName.charAt(0).toUpperCase()}</AvatarFallback>
             </>
           )}
         </Avatar>
@@ -61,7 +61,7 @@ export function CreatePost() {
             data-testid="input-post-content"
           />
           {(isFocused || content) && (
-            <div className="flex items-center justify-between gap-3 mt-2 pt-3 border-t border-border">
+            <div className="flex items-center justify-between gap-2 mt-2 pt-3 border-t border-border">
               <div className="flex items-center gap-2">
                 <Switch
                   id="anonymous"
@@ -69,7 +69,8 @@ export function CreatePost() {
                   onCheckedChange={setIsAnonymous}
                   data-testid="switch-anonymous"
                 />
-                <Label htmlFor="anonymous" className="text-xs text-muted-foreground cursor-pointer">
+                <Label htmlFor="anonymous" className="text-xs text-muted-foreground cursor-pointer flex items-center gap-1.5">
+                  <EyeOff className="w-3 h-3" />
                   Anonim
                 </Label>
               </div>
@@ -77,13 +78,14 @@ export function CreatePost() {
                 size="sm"
                 onClick={() => mutation.mutate({ content, isAnonymous })}
                 disabled={!content.trim() || mutation.isPending}
+                className="gap-1.5"
                 data-testid="button-submit-post"
               >
                 {mutation.isPending ? (
                   <Loader2 className="w-3.5 h-3.5 animate-spin" />
                 ) : (
                   <>
-                    <Send className="w-3.5 h-3.5 mr-1.5" />
+                    <Send className="w-3.5 h-3.5" />
                     Curhat
                   </>
                 )}

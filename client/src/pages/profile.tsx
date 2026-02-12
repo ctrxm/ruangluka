@@ -19,7 +19,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Camera, ArrowLeft, Calendar, Loader2 } from "lucide-react";
+import { Camera, ArrowLeft, Calendar, Loader2, UserCheck, UserPlus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { id as idLocale } from "date-fns/locale";
@@ -103,12 +103,13 @@ export default function ProfilePage() {
   if (isLoading) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-5 space-y-4">
-        <Card className="p-6 border border-border">
-          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5">
-            <Skeleton className="w-24 h-24 rounded-full flex-shrink-0" />
-            <div className="flex-1 space-y-2 w-full">
-              <Skeleton className="h-6 w-40 mx-auto sm:mx-0" />
-              <Skeleton className="h-4 w-24 mx-auto sm:mx-0" />
+        <Card className="border border-border overflow-hidden">
+          <Skeleton className="h-32 w-full" />
+          <div className="px-5 pb-5 -mt-12">
+            <Skeleton className="w-24 h-24 rounded-full" />
+            <div className="mt-3 space-y-2">
+              <Skeleton className="h-6 w-40" />
+              <Skeleton className="h-4 w-24" />
               <Skeleton className="h-4 w-full" />
             </div>
           </div>
@@ -131,22 +132,24 @@ export default function ProfilePage() {
   return (
     <div className="max-w-2xl mx-auto px-4 py-5 space-y-4">
       <Card className="border border-border overflow-hidden" data-testid="card-profile">
-        <div className="h-24 sm:h-32 bg-gradient-to-r from-primary/20 via-chart-2/10 to-primary/5" />
-        <div className="px-5 pb-5 -mt-12 sm:-mt-14">
+        <div className="h-28 sm:h-36 bg-gradient-to-br from-primary/25 via-chart-2/15 to-chart-3/10 relative">
+          <div className="absolute inset-0 bg-gradient-to-t from-background/40 to-transparent" />
+        </div>
+        <div className="px-5 pb-5 -mt-14 sm:-mt-16 relative">
           <div className="flex flex-col sm:flex-row sm:items-end gap-4 flex-wrap">
             <div className="relative flex-shrink-0 mx-auto sm:mx-0">
-              <Avatar className="w-24 h-24 ring-4 ring-background">
+              <Avatar className="w-28 h-28 ring-4 ring-background">
                 <AvatarImage src={profile.avatarUrl || undefined} />
-                <AvatarFallback className="text-2xl bg-primary/10 text-primary font-bold">{profile.displayName.charAt(0).toUpperCase()}</AvatarFallback>
+                <AvatarFallback className="text-3xl bg-primary/10 text-primary font-bold">{profile.displayName.charAt(0).toUpperCase()}</AvatarFallback>
               </Avatar>
               {isOwnProfile && (
                 <>
                   <button
-                    className="absolute bottom-1 right-1 w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center ring-2 ring-background"
+                    className="absolute bottom-2 right-2 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center ring-2 ring-background"
                     onClick={() => fileInputRef.current?.click()}
                     data-testid="button-change-avatar"
                   >
-                    <Camera className="w-3.5 h-3.5" />
+                    <Camera className="w-4 h-4" />
                   </button>
                   <input
                     ref={fileInputRef}
@@ -161,7 +164,7 @@ export default function ProfilePage() {
             </div>
             <div className="flex-1 min-w-0 text-center sm:text-left">
               <div className="flex items-center gap-2 justify-center sm:justify-start flex-wrap">
-                <h2 className="text-lg font-bold" data-testid="text-profile-name">{profile.displayName}</h2>
+                <h2 className="text-xl font-bold" data-testid="text-profile-name">{profile.displayName}</h2>
                 {profile.isVerified && <VerifiedBadge className="w-5 h-5" />}
               </div>
               <p className="text-sm text-muted-foreground" data-testid="text-profile-username">@{profile.username}</p>
@@ -177,9 +180,22 @@ export default function ProfilePage() {
                   variant={profile.isFollowing ? "outline" : "default"}
                   onClick={() => followMutation.mutate()}
                   disabled={followMutation.isPending}
+                  className="gap-1.5"
                   data-testid="button-follow"
                 >
-                  {followMutation.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : (profile.isFollowing ? "Berhenti Ikuti" : "Ikuti")}
+                  {followMutation.isPending ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : profile.isFollowing ? (
+                    <>
+                      <UserCheck className="w-3.5 h-3.5" />
+                      Mengikuti
+                    </>
+                  ) : (
+                    <>
+                      <UserPlus className="w-3.5 h-3.5" />
+                      Ikuti
+                    </>
+                  )}
                 </Button>
               ) : null}
             </div>
@@ -192,7 +208,7 @@ export default function ProfilePage() {
             <span>Bergabung {format(new Date(profile.createdAt!), "MMMM yyyy", { locale: idLocale })}</span>
           </div>
 
-          <div className="flex gap-5 mt-4 justify-center sm:justify-start flex-wrap">
+          <div className="flex gap-6 mt-4 justify-center sm:justify-start flex-wrap">
             <span className="text-sm">
               <strong className="font-bold">{profile.followingCount}</strong>{" "}
               <span className="text-muted-foreground text-xs">Mengikuti</span>
@@ -255,7 +271,7 @@ export default function ProfilePage() {
               disabled={updateProfileMutation.isPending}
               data-testid="button-save-profile"
             >
-              {updateProfileMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Simpan"}
+              {updateProfileMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Simpan Perubahan"}
             </Button>
           </div>
         </DialogContent>

@@ -45,21 +45,25 @@ export default function NotificationsPage() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-5 space-y-4">
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-md bg-primary/10 flex items-center justify-center">
+      <div className="flex items-center justify-between gap-2 flex-wrap">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
             <Bell className="w-4 h-4 text-primary" />
           </div>
           <h1 className="text-base font-bold" data-testid="text-notifications-title">Notifikasi</h1>
+          {unreadCount > 0 && (
+            <span className="text-xs text-muted-foreground">({unreadCount} belum dibaca)</span>
+          )}
         </div>
         {unreadCount > 0 && (
           <Button
             variant="ghost"
             size="sm"
             onClick={() => markAllReadMutation.mutate()}
+            className="gap-1.5"
             data-testid="button-mark-all-read"
           >
-            <CheckCheck className="w-4 h-4 mr-1.5" />
+            <CheckCheck className="w-4 h-4" />
             Tandai dibaca
           </Button>
         )}
@@ -67,8 +71,8 @@ export default function NotificationsPage() {
 
       {isLoading && (
         <div className="space-y-2">
-          {[1, 2, 3].map(i => (
-            <Card key={i} className="p-3 border border-border">
+          {[1, 2, 3, 4].map(i => (
+            <Card key={i} className="p-3.5 border border-border">
               <div className="flex gap-3">
                 <Skeleton className="w-10 h-10 rounded-full flex-shrink-0" />
                 <div className="flex-1 space-y-1.5">
@@ -82,12 +86,12 @@ export default function NotificationsPage() {
       )}
 
       {notifications?.length === 0 && (
-        <Card className="p-10 border border-border text-center">
-          <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
-            <Bell className="w-7 h-7 text-primary" />
+        <Card className="p-12 border border-border text-center">
+          <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
+            <Bell className="w-8 h-8 text-primary" />
           </div>
-          <p className="text-sm font-medium mb-1">Belum ada notifikasi</p>
-          <p className="text-xs text-muted-foreground">Notifikasi akan muncul di sini</p>
+          <p className="text-base font-semibold mb-1">Belum ada notifikasi</p>
+          <p className="text-sm text-muted-foreground">Notifikasi akan muncul di sini saat ada aktivitas</p>
         </Card>
       )}
 
@@ -99,7 +103,7 @@ export default function NotificationsPage() {
           return (
             <Card
               key={notif.id}
-              className={`p-3.5 border border-border hover-elevate cursor-pointer transition-colors ${!notif.isRead ? "bg-accent/20" : ""}`}
+              className={`p-3.5 border border-border hover-elevate cursor-pointer transition-colors ${!notif.isRead ? "bg-accent/30" : ""}`}
               onClick={() => {
                 if (notif.postId) navigate(`/post/${notif.postId}`);
                 else if (notif.fromUser) navigate(`/profile/${notif.fromUser.username}`);
@@ -110,7 +114,7 @@ export default function NotificationsPage() {
                 <div className="relative flex-shrink-0">
                   <Avatar className="w-10 h-10">
                     <AvatarImage src={notif.fromUser?.avatarUrl || undefined} />
-                    <AvatarFallback className="text-xs bg-primary/10 text-primary font-semibold">
+                    <AvatarFallback className="text-xs bg-primary/10 text-primary font-bold">
                       {notif.fromUser?.displayName?.charAt(0) || "?"}
                     </AvatarFallback>
                   </Avatar>
@@ -124,7 +128,7 @@ export default function NotificationsPage() {
                     {formatDistanceToNow(new Date(notif.createdAt!), { addSuffix: true, locale: idLocale })}
                   </p>
                 </div>
-                {!notif.isRead && <div className="w-2 h-2 rounded-full bg-primary flex-shrink-0 mt-2" />}
+                {!notif.isRead && <div className="w-2.5 h-2.5 rounded-full bg-primary flex-shrink-0 mt-1.5 animate-pulse" />}
               </div>
             </Card>
           );

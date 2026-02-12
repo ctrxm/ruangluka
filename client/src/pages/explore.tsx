@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import type { PostWithAuthor, User } from "@shared/schema";
 import { PostCard } from "@/components/post-card";
@@ -14,12 +14,12 @@ export default function ExplorePage() {
   const [, navigate] = useLocation();
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const timerRef = useRef<ReturnType<typeof setTimeout>>();
 
-  const handleSearch = (val: string) => {
-    setSearch(val);
-    const t = setTimeout(() => setDebouncedSearch(val), 300);
-    return () => clearTimeout(t);
-  };
+  useEffect(() => {
+    timerRef.current = setTimeout(() => setDebouncedSearch(search), 300);
+    return () => clearTimeout(timerRef.current);
+  }, [search]);
 
   const { data: posts, isLoading: postsLoading } = useQuery<PostWithAuthor[]>({
     queryKey: ["/api/posts", "explore"],
@@ -40,7 +40,7 @@ export default function ExplorePage() {
           type="search"
           placeholder="Cari orang atau curhat..."
           value={search}
-          onChange={(e) => handleSearch(e.target.value)}
+          onChange={(e) => setSearch(e.target.value)}
           className="pl-10"
           data-testid="input-search"
         />
@@ -50,7 +50,7 @@ export default function ExplorePage() {
         <div className="space-y-5">
           {searchResults.users.length > 0 && (
             <div>
-              <h3 className="text-xs font-semibold text-muted-foreground mb-3 uppercase tracking-wider">Pengguna</h3>
+              <h3 className="text-xs font-bold text-muted-foreground mb-3 uppercase tracking-wider">Pengguna</h3>
               <div className="space-y-2">
                 {searchResults.users.map((u) => (
                   <Card
@@ -62,10 +62,10 @@ export default function ExplorePage() {
                     <div className="flex items-center gap-3">
                       <Avatar className="w-10 h-10">
                         <AvatarImage src={u.avatarUrl || undefined} />
-                        <AvatarFallback className="text-sm bg-primary/10 text-primary font-semibold">{u.displayName.charAt(0)}</AvatarFallback>
+                        <AvatarFallback className="text-sm bg-primary/10 text-primary font-bold">{u.displayName.charAt(0)}</AvatarFallback>
                       </Avatar>
                       <div className="min-w-0">
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-1.5 flex-wrap">
                           <span className="text-sm font-semibold truncate">{u.displayName}</span>
                           {u.isVerified && <VerifiedBadge className="w-3.5 h-3.5" />}
                         </div>
@@ -79,16 +79,17 @@ export default function ExplorePage() {
           )}
           {searchResults.posts.length > 0 && (
             <div>
-              <h3 className="text-xs font-semibold text-muted-foreground mb-3 uppercase tracking-wider">Curhat</h3>
+              <h3 className="text-xs font-bold text-muted-foreground mb-3 uppercase tracking-wider">Curhat</h3>
               <div className="space-y-3">
                 {searchResults.posts.map((p) => <PostCard key={p.id} post={p} />)}
               </div>
             </div>
           )}
           {searchResults.users.length === 0 && searchResults.posts.length === 0 && (
-            <Card className="p-8 border border-border text-center">
-              <Search className="w-10 h-10 mx-auto text-muted-foreground/30 mb-3" />
-              <p className="text-sm text-muted-foreground">Tidak ditemukan hasil untuk "{debouncedSearch}"</p>
+            <Card className="p-10 border border-border text-center">
+              <Search className="w-12 h-12 mx-auto text-muted-foreground/30 mb-3" />
+              <p className="text-sm font-medium mb-1">Tidak ditemukan</p>
+              <p className="text-xs text-muted-foreground">Coba kata kunci lain untuk "{debouncedSearch}"</p>
             </Card>
           )}
         </div>
@@ -96,11 +97,11 @@ export default function ExplorePage() {
 
       {!showSearch && (
         <div className="space-y-4">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-md bg-primary/10 flex items-center justify-center">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
               <TrendingUp className="w-4 h-4 text-primary" />
             </div>
-            <h2 className="text-sm font-bold">Curhat Terbaru</h2>
+            <h2 className="text-base font-bold">Curhat Terbaru</h2>
           </div>
           {postsLoading ? (
             <div className="space-y-3">

@@ -34,12 +34,12 @@ export default function FeedPage() {
       )}
 
       {posts && posts.length === 0 && (
-        <Card className="p-10 border border-border text-center">
-          <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
-            <MessageCircle className="w-7 h-7 text-primary" />
+        <Card className="p-12 border border-border text-center">
+          <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
+            <MessageCircle className="w-8 h-8 text-primary" />
           </div>
-          <p className="text-sm font-medium mb-1">Belum ada curhat</p>
-          <p className="text-xs text-muted-foreground">Jadilah yang pertama berbagi cerita!</p>
+          <p className="text-base font-semibold mb-1">Belum ada curhat</p>
+          <p className="text-sm text-muted-foreground">Jadilah yang pertama berbagi cerita!</p>
         </Card>
       )}
 

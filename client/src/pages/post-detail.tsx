@@ -5,7 +5,7 @@ import { PostCard } from "@/components/post-card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, MessageCircle } from "lucide-react";
 
 export default function PostDetailPage() {
   const [, navigate] = useLocation();
@@ -20,6 +20,9 @@ export default function PostDetailPage() {
   if (isLoading) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-5 space-y-4">
+        <Button variant="ghost" size="sm" disabled>
+          <ArrowLeft className="w-4 h-4 mr-1.5" /> Kembali
+        </Button>
         <Card className="p-4 border border-border">
           <div className="flex gap-3">
             <Skeleton className="w-10 h-10 rounded-full flex-shrink-0" />
@@ -36,10 +39,14 @@ export default function PostDetailPage() {
 
   if (!post) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-10 text-center">
-        <p className="text-sm text-muted-foreground mb-4">Postingan tidak ditemukan</p>
+      <div className="max-w-2xl mx-auto px-4 py-12 text-center">
+        <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center mx-auto mb-4">
+          <MessageCircle className="w-8 h-8 text-muted-foreground" />
+        </div>
+        <p className="text-base font-semibold mb-1">Postingan tidak ditemukan</p>
+        <p className="text-sm text-muted-foreground mb-4">Mungkin sudah dihapus atau tidak tersedia</p>
         <Button variant="ghost" onClick={() => navigate("/")} data-testid="button-back-home">
-          <ArrowLeft className="w-4 h-4 mr-2" /> Kembali
+          <ArrowLeft className="w-4 h-4 mr-2" /> Kembali ke Beranda
         </Button>
       </div>
     );
