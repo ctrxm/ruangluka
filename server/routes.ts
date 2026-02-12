@@ -9,7 +9,7 @@ import fs from "fs";
 import bcrypt from "bcryptjs";
 import { storage } from "./storage";
 import { pool } from "./db";
-import { registerSchema, loginSchema, insertPostSchema, insertCommentSchema, insertAdSchema, updateProfileSchema } from "@shared/schema";
+import { registerSchema, loginSchema, insertPostSchema, insertCommentSchema, insertAdSchema, updateProfileSchema } from "../shared/schema";
 
 const PgStore = ConnectPgSimple(session);
 

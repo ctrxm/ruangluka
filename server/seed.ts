@@ -14,7 +14,7 @@ export async function seedDatabase() {
     await storage.updateUserProfile(admin.id, { bio: "Pengelola platform Ruang Luka" });
 
     const { db } = await import("./db");
-    const { users } = await import("@shared/schema");
+    const { users } = await import("../shared/schema");
     const { eq } = await import("drizzle-orm");
     await db.update(users).set({ isAdmin: true, isVerified: true }).where(eq(users.id, admin.id));
 

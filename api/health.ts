@@ -37,7 +37,7 @@ export default async function handler(_req: VercelRequest, res: VercelResponse) 
     checks.steps.push("2. OK - DB connected");
 
     checks.steps.push("3. Testing schema import...");
-    const schema = await import("../shared/schema");
+    const schema = require("../shared/schema");
     checks.steps.push("3. OK - Schema has: " + Object.keys(schema).slice(0, 5).join(", "));
 
     checks.steps.push("4. Testing express import...");

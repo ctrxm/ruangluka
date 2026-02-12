@@ -5,7 +5,7 @@ import {
   type User, type InsertUser, type Post, type InsertPost, type Comment, type InsertComment,
   type Ad, type InsertAd, type PostWithAuthor, type CommentWithAuthor, type UserProfile,
   type Notification, type SiteSetting,
-} from "@shared/schema";
+} from "../shared/schema";
 import bcrypt from "bcryptjs";
 
 export interface IStorage {
