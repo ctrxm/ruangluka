@@ -6,9 +6,8 @@
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ],
   "functions": {
-    "api/[...path].ts": {
-      "maxDuration": 30,
-      "includeFiles": "server/**,shared/**"
+    "api/[...path].js": {
+      "maxDuration": 30
     }
   }
 }
