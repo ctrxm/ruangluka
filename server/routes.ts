@@ -87,8 +87,22 @@ async function requireAdmin(req: Request, res: Response, next: NextFunction) {
 export async function registerRoutes(httpServer: Server, app: Express, options?: { serverless?: boolean }): Promise<Server> {
   const isProduction = process.env.NODE_ENV === "production";
   const isServerless = options?.serverless || !!process.env.VERCEL;
+  const pgStoreOptions: any = {
+    pool,
+    tableName: "session",
+    schemaName: "public",
+    pruneSessionInterval: 60 * 15,
+    errorLog: console.error.bind(console),
+  };
+
+  if (isServerless) {
+    pgStoreOptions.createTableIfMissing = false;
+  } else {
+    pgStoreOptions.createTableIfMissing = true;
+  }
+
   const sessionMiddleware = session({
-    store: new PgStore({ pool, createTableIfMissing: true }),
+    store: new PgStore(pgStoreOptions),
     secret: process.env.SESSION_SECRET || "ruangluka-secret-key-change-in-production",
     resave: false,
     saveUninitialized: false,
