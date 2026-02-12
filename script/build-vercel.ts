@@ -14,7 +14,7 @@ async function buildVercel() {
   for (const file of apiFiles) {
     const entryPoint = `api/${file}`;
     const baseName = file.replace(".ts", "");
-    const handlerFile = `api/_${baseName}_handler.js`;
+    const handlerFile = `api/_${baseName}_handler.mjs`;
 
     await esbuild({
       entryPoints: [entryPoint],
@@ -22,19 +22,22 @@ async function buildVercel() {
       bundle: true,
       platform: "node",
       target: "node18",
-      format: "cjs",
+      format: "esm",
       sourcemap: false,
       minify: false,
       external: [],
+      banner: {
+        js: 'import { createRequire } from "module"; const require = createRequire(import.meta.url);',
+      },
     });
 
     console.log(`   Bundled: ${entryPoint} → ${handlerFile}`);
 
     await writeFile(
       entryPoint,
-      `module.exports = require("./_${baseName}_handler.js");\n`
+      `export { default } from "./_${baseName}_handler.mjs";\n`
     );
-    console.log(`   Replaced ${entryPoint} with re-export wrapper`);
+    console.log(`   Replaced ${entryPoint} with ESM re-export`);
   }
 
   console.log("Vercel build complete!");
