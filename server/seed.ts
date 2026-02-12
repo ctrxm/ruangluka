@@ -1,7 +1,22 @@
 import { storage } from "./storage";
+import { pool } from "./db";
+
+async function ensureSessionTable() {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS "session" (
+      "sid" varchar NOT NULL COLLATE "default",
+      "sess" json NOT NULL,
+      "expire" timestamp(6) NOT NULL,
+      CONSTRAINT "session_pkey" PRIMARY KEY ("sid")
+    );
+    CREATE INDEX IF NOT EXISTS "IDX_session_expire" ON "session" ("expire");
+  `);
+}
 
 export async function seedDatabase() {
   try {
+    await ensureSessionTable();
+
     const existingAdmin = await storage.getUserByEmail("admin@ruangluka.id");
     if (existingAdmin) return;
 
