@@ -1,6 +1,6 @@
 import { build as viteBuild } from "vite";
 import { build as esbuild } from "esbuild";
-import { rm, readdir } from "fs/promises";
+import { rm, readdir, writeFile } from "fs/promises";
 
 async function buildVercel() {
   await rm("dist", { recursive: true, force: true });
@@ -13,11 +13,12 @@ async function buildVercel() {
 
   for (const file of apiFiles) {
     const entryPoint = `api/${file}`;
-    const outfile = `api/${file.replace(".ts", ".js")}`;
+    const baseName = file.replace(".ts", "");
+    const handlerFile = `api/_${baseName}_handler.js`;
 
     await esbuild({
       entryPoints: [entryPoint],
-      outfile,
+      outfile: handlerFile,
       bundle: true,
       platform: "node",
       target: "node18",
@@ -27,11 +28,16 @@ async function buildVercel() {
       external: [],
     });
 
-    console.log(`   Bundled: ${entryPoint} → ${outfile}`);
+    console.log(`   Bundled: ${entryPoint} → ${handlerFile}`);
+
+    await writeFile(
+      entryPoint,
+      `module.exports = require("./_${baseName}_handler.js");\n`
+    );
+    console.log(`   Replaced ${entryPoint} with re-export wrapper`);
   }
 
   console.log("Vercel build complete!");
-  console.log("Note: .ts source files kept intact for Vercel function detection.");
 }
 
 buildVercel().catch((err) => {
