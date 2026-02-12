@@ -172,7 +172,7 @@ function AdsManagement() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-2">
         <h3 className="text-sm font-semibold">Manajemen Iklan ({ads?.length || 0})</h3>
         <Button size="sm" onClick={() => setShowCreate(true)} data-testid="button-create-ad">
           <Plus className="w-3.5 h-3.5 mr-1.5" /> Tambah Iklan
@@ -182,7 +182,7 @@ function AdsManagement() {
       <div className="space-y-3">
         {ads?.map((ad) => (
           <Card key={ad.id} className="p-3 border border-border" data-testid={`card-ad-${ad.id}`}>
-            <div className="flex items-start justify-between gap-3">
+            <div className="flex items-start justify-between gap-2">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium">{ad.title}</span>
@@ -277,7 +277,7 @@ function SiteSettingsPanel() {
       <h3 className="text-sm font-semibold">Pengaturan Situs</h3>
 
       <Card className="p-4 border border-border space-y-4">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-3">
           <div>
             <p className="text-sm font-medium">Mode Maintenance</p>
             <p className="text-xs text-muted-foreground">Nonaktifkan situs sementara untuk perawatan</p>

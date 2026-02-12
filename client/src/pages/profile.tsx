@@ -19,7 +19,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Camera, ArrowLeft, Calendar } from "lucide-react";
+import { Camera, ArrowLeft, Calendar, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { id as idLocale } from "date-fns/locale";
@@ -102,14 +102,14 @@ export default function ProfilePage() {
 
   if (isLoading) {
     return (
-      <div className="max-w-xl mx-auto px-4 py-4 space-y-4">
+      <div className="max-w-2xl mx-auto px-4 py-5 space-y-4">
         <Card className="p-6 border border-border">
-          <div className="flex items-start gap-4">
-            <Skeleton className="w-20 h-20 rounded-full" />
-            <div className="flex-1 space-y-2">
-              <Skeleton className="h-5 w-40" />
-              <Skeleton className="h-3 w-24" />
-              <Skeleton className="h-3 w-full" />
+          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5">
+            <Skeleton className="w-24 h-24 rounded-full flex-shrink-0" />
+            <div className="flex-1 space-y-2 w-full">
+              <Skeleton className="h-6 w-40 mx-auto sm:mx-0" />
+              <Skeleton className="h-4 w-24 mx-auto sm:mx-0" />
+              <Skeleton className="h-4 w-full" />
             </div>
           </div>
         </Card>
@@ -119,9 +119,9 @@ export default function ProfilePage() {
 
   if (!profile) {
     return (
-      <div className="max-w-xl mx-auto px-4 py-8 text-center">
-        <p className="text-muted-foreground">Pengguna tidak ditemukan</p>
-        <Button variant="ghost" className="mt-4" onClick={() => navigate("/")} data-testid="button-back-home">
+      <div className="max-w-2xl mx-auto px-4 py-10 text-center">
+        <p className="text-muted-foreground mb-4">Pengguna tidak ditemukan</p>
+        <Button variant="ghost" onClick={() => navigate("/")} data-testid="button-back-home">
           <ArrowLeft className="w-4 h-4 mr-2" /> Kembali
         </Button>
       </div>
@@ -129,57 +129,44 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="max-w-xl mx-auto px-4 py-4 space-y-4">
-      <Card className="p-6 border border-border" data-testid="card-profile">
-        <div className="flex items-start gap-4">
-          <div className="relative">
-            <Avatar className="w-20 h-20">
-              <AvatarImage src={profile.avatarUrl || undefined} />
-              <AvatarFallback className="text-2xl bg-muted">{profile.displayName.charAt(0).toUpperCase()}</AvatarFallback>
-            </Avatar>
-            {isOwnProfile && (
-              <>
-                <button
-                  className="absolute bottom-0 right-0 w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center border-2 border-background"
-                  onClick={() => fileInputRef.current?.click()}
-                  data-testid="button-change-avatar"
-                >
-                  <Camera className="w-3.5 h-3.5" />
-                </button>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleAvatarChange}
-                  data-testid="input-avatar-file"
-                />
-              </>
-            )}
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <h2 className="text-lg font-bold" data-testid="text-profile-name">{profile.displayName}</h2>
-              {profile.isVerified && <VerifiedBadge className="w-5 h-5" />}
+    <div className="max-w-2xl mx-auto px-4 py-5 space-y-4">
+      <Card className="border border-border overflow-hidden" data-testid="card-profile">
+        <div className="h-24 sm:h-32 bg-gradient-to-r from-primary/20 via-chart-2/10 to-primary/5" />
+        <div className="px-5 pb-5 -mt-12 sm:-mt-14">
+          <div className="flex flex-col sm:flex-row sm:items-end gap-4 flex-wrap">
+            <div className="relative flex-shrink-0 mx-auto sm:mx-0">
+              <Avatar className="w-24 h-24 ring-4 ring-background">
+                <AvatarImage src={profile.avatarUrl || undefined} />
+                <AvatarFallback className="text-2xl bg-primary/10 text-primary font-bold">{profile.displayName.charAt(0).toUpperCase()}</AvatarFallback>
+              </Avatar>
+              {isOwnProfile && (
+                <>
+                  <button
+                    className="absolute bottom-1 right-1 w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center ring-2 ring-background"
+                    onClick={() => fileInputRef.current?.click()}
+                    data-testid="button-change-avatar"
+                  >
+                    <Camera className="w-3.5 h-3.5" />
+                  </button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleAvatarChange}
+                    data-testid="input-avatar-file"
+                  />
+                </>
+              )}
             </div>
-            <p className="text-sm text-muted-foreground" data-testid="text-profile-username">@{profile.username}</p>
-            {profile.bio && <p className="text-sm mt-2 break-words" data-testid="text-profile-bio">{profile.bio}</p>}
-            <div className="flex items-center gap-1 mt-2 text-xs text-muted-foreground">
-              <Calendar className="w-3 h-3" />
-              <span>Bergabung {format(new Date(profile.createdAt!), "MMMM yyyy", { locale: idLocale })}</span>
+            <div className="flex-1 min-w-0 text-center sm:text-left">
+              <div className="flex items-center gap-2 justify-center sm:justify-start flex-wrap">
+                <h2 className="text-lg font-bold" data-testid="text-profile-name">{profile.displayName}</h2>
+                {profile.isVerified && <VerifiedBadge className="w-5 h-5" />}
+              </div>
+              <p className="text-sm text-muted-foreground" data-testid="text-profile-username">@{profile.username}</p>
             </div>
-            <div className="flex gap-4 mt-3">
-              <span className="text-sm">
-                <strong>{profile.followingCount}</strong> <span className="text-muted-foreground text-xs">Mengikuti</span>
-              </span>
-              <span className="text-sm">
-                <strong>{profile.followersCount}</strong> <span className="text-muted-foreground text-xs">Pengikut</span>
-              </span>
-              <span className="text-sm">
-                <strong>{profile.postsCount}</strong> <span className="text-muted-foreground text-xs">Postingan</span>
-              </span>
-            </div>
-            <div className="mt-3">
+            <div className="flex justify-center sm:justify-end">
               {isOwnProfile ? (
                 <Button variant="outline" size="sm" onClick={openEdit} data-testid="button-edit-profile">
                   Edit Profil
@@ -192,10 +179,32 @@ export default function ProfilePage() {
                   disabled={followMutation.isPending}
                   data-testid="button-follow"
                 >
-                  {profile.isFollowing ? "Berhenti Ikuti" : "Ikuti"}
+                  {followMutation.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : (profile.isFollowing ? "Berhenti Ikuti" : "Ikuti")}
                 </Button>
               ) : null}
             </div>
+          </div>
+
+          {profile.bio && <p className="text-sm mt-4 break-words leading-relaxed" data-testid="text-profile-bio">{profile.bio}</p>}
+
+          <div className="flex items-center gap-1 mt-3 text-xs text-muted-foreground justify-center sm:justify-start">
+            <Calendar className="w-3 h-3" />
+            <span>Bergabung {format(new Date(profile.createdAt!), "MMMM yyyy", { locale: idLocale })}</span>
+          </div>
+
+          <div className="flex gap-5 mt-4 justify-center sm:justify-start flex-wrap">
+            <span className="text-sm">
+              <strong className="font-bold">{profile.followingCount}</strong>{" "}
+              <span className="text-muted-foreground text-xs">Mengikuti</span>
+            </span>
+            <span className="text-sm">
+              <strong className="font-bold">{profile.followersCount}</strong>{" "}
+              <span className="text-muted-foreground text-xs">Pengikut</span>
+            </span>
+            <span className="text-sm">
+              <strong className="font-bold">{profile.postsCount}</strong>{" "}
+              <span className="text-muted-foreground text-xs">Postingan</span>
+            </span>
           </div>
         </div>
       </Card>
@@ -203,7 +212,7 @@ export default function ProfilePage() {
       <div className="space-y-4">
         {posts?.map((post) => <PostCard key={post.id} post={post} />)}
         {posts?.length === 0 && (
-          <Card className="p-8 border border-border text-center">
+          <Card className="p-10 border border-border text-center">
             <p className="text-sm text-muted-foreground">Belum ada postingan</p>
           </Card>
         )}
@@ -215,24 +224,24 @@ export default function ProfilePage() {
             <DialogTitle>Edit Profil</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-2">
-            <div className="space-y-2">
-              <Label className="text-xs">Nama Tampilan</Label>
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium text-muted-foreground">Nama Tampilan</Label>
               <Input
                 value={editForm.displayName}
                 onChange={(e) => setEditForm(p => ({ ...p, displayName: e.target.value }))}
                 data-testid="input-edit-displayname"
               />
             </div>
-            <div className="space-y-2">
-              <Label className="text-xs">Username</Label>
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium text-muted-foreground">Username</Label>
               <Input
                 value={editForm.username}
                 onChange={(e) => setEditForm(p => ({ ...p, username: e.target.value }))}
                 data-testid="input-edit-username"
               />
             </div>
-            <div className="space-y-2">
-              <Label className="text-xs">Bio</Label>
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium text-muted-foreground">Bio</Label>
               <Textarea
                 value={editForm.bio}
                 onChange={(e) => setEditForm(p => ({ ...p, bio: e.target.value }))}
@@ -246,7 +255,7 @@ export default function ProfilePage() {
               disabled={updateProfileMutation.isPending}
               data-testid="button-save-profile"
             >
-              Simpan
+              {updateProfileMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Simpan"}
             </Button>
           </div>
         </DialogContent>

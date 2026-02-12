@@ -13,7 +13,7 @@ export default function FeedPage() {
   });
 
   return (
-    <div className="max-w-xl mx-auto px-4 py-4 space-y-4">
+    <div className="max-w-2xl mx-auto px-4 py-5 space-y-4">
       <CreatePost />
 
       {isLoading && (
@@ -21,7 +21,7 @@ export default function FeedPage() {
           {[1, 2, 3].map((i) => (
             <Card key={i} className="p-4 border border-border">
               <div className="flex gap-3">
-                <Skeleton className="w-10 h-10 rounded-full" />
+                <Skeleton className="w-10 h-10 rounded-full flex-shrink-0" />
                 <div className="flex-1 space-y-2">
                   <Skeleton className="h-4 w-32" />
                   <Skeleton className="h-3 w-full" />
@@ -34,9 +34,12 @@ export default function FeedPage() {
       )}
 
       {posts && posts.length === 0 && (
-        <Card className="p-8 border border-border text-center">
-          <MessageCircle className="w-12 h-12 mx-auto text-muted-foreground/40 mb-3" />
-          <p className="text-sm text-muted-foreground">Belum ada curhat. Jadilah yang pertama!</p>
+        <Card className="p-10 border border-border text-center">
+          <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
+            <MessageCircle className="w-7 h-7 text-primary" />
+          </div>
+          <p className="text-sm font-medium mb-1">Belum ada curhat</p>
+          <p className="text-xs text-muted-foreground">Jadilah yang pertama berbagi cerita!</p>
         </Card>
       )}
 

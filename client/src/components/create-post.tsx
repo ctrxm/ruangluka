@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Send, UserCircle } from "lucide-react";
+import { Send, UserCircle, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export function CreatePost() {
@@ -16,6 +16,7 @@ export function CreatePost() {
   const { toast } = useToast();
   const [content, setContent] = useState("");
   const [isAnonymous, setIsAnonymous] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
 
   const mutation = useMutation({
     mutationFn: (data: { content: string; isAnonymous: boolean }) =>
@@ -23,6 +24,7 @@ export function CreatePost() {
     onSuccess: () => {
       setContent("");
       setIsAnonymous(false);
+      setIsFocused(false);
       queryClient.invalidateQueries({ queryKey: ["/api/feed"] });
       queryClient.invalidateQueries({ queryKey: ["/api/posts"] });
       toast({ title: "Curhat berhasil diposting!" });
@@ -37,7 +39,7 @@ export function CreatePost() {
   return (
     <Card className="p-4 border border-border" data-testid="card-create-post">
       <div className="flex gap-3">
-        <Avatar className="w-10 h-10">
+        <Avatar className="w-10 h-10 flex-shrink-0">
           {isAnonymous ? (
             <AvatarFallback className="bg-muted">
               <UserCircle className="w-5 h-5 text-muted-foreground" />
@@ -45,40 +47,49 @@ export function CreatePost() {
           ) : (
             <>
               <AvatarImage src={user.avatarUrl || undefined} />
-              <AvatarFallback className="bg-muted text-sm">{user.displayName.charAt(0).toUpperCase()}</AvatarFallback>
+              <AvatarFallback className="bg-primary/10 text-primary text-sm font-semibold">{user.displayName.charAt(0).toUpperCase()}</AvatarFallback>
             </>
           )}
         </Avatar>
-        <div className="flex-1">
+        <div className="flex-1 min-w-0">
           <Textarea
             placeholder="Apa yang ingin kamu ceritakan? Luapkan di sini..."
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            className="resize-none border-0 text-sm focus-visible:ring-0 min-h-[80px]"
+            onFocus={() => setIsFocused(true)}
+            className="resize-none border-0 text-sm focus-visible:ring-0 min-h-[60px]"
             data-testid="input-post-content"
           />
-          <div className="flex items-center justify-between mt-2 pt-2 border-t border-border">
-            <div className="flex items-center gap-2">
-              <Switch
-                id="anonymous"
-                checked={isAnonymous}
-                onCheckedChange={setIsAnonymous}
-                data-testid="switch-anonymous"
-              />
-              <Label htmlFor="anonymous" className="text-xs text-muted-foreground cursor-pointer">
-                Posting Anonim
-              </Label>
+          {(isFocused || content) && (
+            <div className="flex items-center justify-between gap-3 mt-2 pt-3 border-t border-border">
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="anonymous"
+                  checked={isAnonymous}
+                  onCheckedChange={setIsAnonymous}
+                  data-testid="switch-anonymous"
+                />
+                <Label htmlFor="anonymous" className="text-xs text-muted-foreground cursor-pointer">
+                  Anonim
+                </Label>
+              </div>
+              <Button
+                size="sm"
+                onClick={() => mutation.mutate({ content, isAnonymous })}
+                disabled={!content.trim() || mutation.isPending}
+                data-testid="button-submit-post"
+              >
+                {mutation.isPending ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <>
+                    <Send className="w-3.5 h-3.5 mr-1.5" />
+                    Curhat
+                  </>
+                )}
+              </Button>
             </div>
-            <Button
-              size="sm"
-              onClick={() => mutation.mutate({ content, isAnonymous })}
-              disabled={!content.trim() || mutation.isPending}
-              data-testid="button-submit-post"
-            >
-              <Send className="w-3.5 h-3.5 mr-1.5" />
-              Curhat
-            </Button>
-          </div>
+          )}
         </div>
       </div>
     </Card>

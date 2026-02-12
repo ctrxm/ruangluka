@@ -17,7 +17,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Home, Search, Bell, Shield, User, LogOut, Loader2 } from "lucide-react";
+import { Home, Search, Bell, Shield, User, LogOut, Loader2, Compass } from "lucide-react";
 import NotFound from "@/pages/not-found";
 import AuthPage from "@/pages/auth";
 import FeedPage from "@/pages/feed";
@@ -33,13 +33,13 @@ function MobileNav() {
 
   const items = [
     { icon: Home, path: "/", label: "Beranda" },
-    { icon: Search, path: "/explore", label: "Jelajahi" },
+    { icon: Compass, path: "/explore", label: "Jelajahi" },
     { icon: Bell, path: "/notifications", label: "Notifikasi", badge: unreadCount },
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-background border-t border-border z-50 sm:hidden" data-testid="nav-mobile">
-      <div className="flex items-center justify-around h-14">
+    <nav className="fixed bottom-0 left-0 right-0 bg-background/80 backdrop-blur-xl border-t border-border z-50 sm:hidden" data-testid="nav-mobile">
+      <div className="flex items-center justify-around gap-2 h-14">
         {items.map(({ icon: Icon, path, label, badge }) => {
           const isActive = location === path;
           return (
@@ -57,7 +57,7 @@ function MobileNav() {
                   </span>
                 ) : null}
               </div>
-              <span className="text-[10px]">{label}</span>
+              <span className="text-[10px] font-medium">{label}</span>
             </button>
           );
         })}
@@ -74,17 +74,19 @@ function Header() {
   if (!user) return null;
 
   return (
-    <header className="sticky top-0 bg-background/95 backdrop-blur border-b border-border z-50" data-testid="header">
-      <div className="max-w-3xl mx-auto flex items-center justify-between gap-2 px-4 h-14">
-        <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/")} data-testid="link-logo">
-          <img src="/images/logo.png" alt="Ruang Luka" className="w-8 h-8" />
-          <span className="font-bold text-base hidden sm:inline">Ruang Luka</span>
+    <header className="sticky top-0 bg-background/80 backdrop-blur-xl border-b border-border z-50" data-testid="header">
+      <div className="max-w-2xl mx-auto flex items-center justify-between gap-3 px-4 h-14">
+        <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => navigate("/")} data-testid="link-logo">
+          <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+            <img src="/images/logo.png" alt="Ruang Luka" className="w-5 h-5" />
+          </div>
+          <span className="font-bold text-base hidden sm:inline gradient-text">Ruang Luka</span>
         </div>
 
-        <nav className="hidden sm:flex items-center gap-1" data-testid="nav-desktop">
+        <nav className="hidden sm:flex items-center gap-1 flex-wrap" data-testid="nav-desktop">
           {[
             { icon: Home, path: "/", label: "Beranda" },
-            { icon: Search, path: "/explore", label: "Jelajahi" },
+            { icon: Compass, path: "/explore", label: "Jelajahi" },
             { icon: Bell, path: "/notifications", label: "Notifikasi", badge: unreadCount },
           ].map(({ icon: Icon, path, label, badge }) => {
             const isActive = location === path;
@@ -94,13 +96,13 @@ function Header() {
                 variant={isActive ? "secondary" : "ghost"}
                 size="sm"
                 onClick={() => navigate(path)}
-                className="relative"
+                className="relative gap-1.5"
                 data-testid={`button-desktop-nav-${label.toLowerCase()}`}
               >
-                <Icon className="w-4 h-4 mr-1.5" />
+                <Icon className="w-4 h-4" />
                 <span className="text-xs">{label}</span>
                 {badge ? (
-                  <Badge variant="destructive" className="ml-1 text-[9px] px-1 min-w-0 h-4">
+                  <Badge variant="destructive" className="ml-0.5 text-[9px] px-1 min-w-0 h-4">
                     {badge > 9 ? "9+" : badge}
                   </Badge>
                 ) : null}
@@ -109,14 +111,14 @@ function Header() {
           })}
         </nav>
 
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 flex-wrap">
           <ThemeToggle />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="rounded-full" data-testid="button-user-menu">
+              <button className="rounded-full ring-2 ring-transparent hover:ring-primary/20 transition-all" data-testid="button-user-menu">
                 <Avatar className="w-8 h-8">
                   <AvatarImage src={user.avatarUrl || undefined} />
-                  <AvatarFallback className="text-xs bg-muted">{user.displayName.charAt(0).toUpperCase()}</AvatarFallback>
+                  <AvatarFallback className="text-xs bg-primary/10 text-primary font-semibold">{user.displayName.charAt(0).toUpperCase()}</AvatarFallback>
                 </Avatar>
               </button>
             </DropdownMenuTrigger>
@@ -147,8 +149,10 @@ function AppRoutes() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-3">
-          <img src="/images/logo.png" alt="Ruang Luka" className="w-16 h-16 animate-pulse" />
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center">
+            <img src="/images/logo.png" alt="Ruang Luka" className="w-10 h-10 animate-pulse" />
+          </div>
           <Loader2 className="w-5 h-5 animate-spin text-primary" />
         </div>
       </div>

@@ -22,10 +22,10 @@ const iconMap: Record<string, any> = {
 };
 
 const colorMap: Record<string, string> = {
-  like: "text-red-500",
-  comment: "text-primary",
-  repost: "text-green-500",
-  follow: "text-blue-500",
+  like: "text-red-500 bg-red-500/10",
+  comment: "text-primary bg-primary/10",
+  repost: "text-green-500 bg-green-500/10",
+  follow: "text-blue-500 bg-blue-500/10",
 };
 
 export default function NotificationsPage() {
@@ -44,9 +44,14 @@ export default function NotificationsPage() {
   const unreadCount = notifications?.filter(n => !n.isRead).length || 0;
 
   return (
-    <div className="max-w-xl mx-auto px-4 py-4 space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-lg font-bold" data-testid="text-notifications-title">Notifikasi</h1>
+    <div className="max-w-2xl mx-auto px-4 py-5 space-y-4">
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-md bg-primary/10 flex items-center justify-center">
+            <Bell className="w-4 h-4 text-primary" />
+          </div>
+          <h1 className="text-base font-bold" data-testid="text-notifications-title">Notifikasi</h1>
+        </div>
         {unreadCount > 0 && (
           <Button
             variant="ghost"
@@ -55,7 +60,7 @@ export default function NotificationsPage() {
             data-testid="button-mark-all-read"
           >
             <CheckCheck className="w-4 h-4 mr-1.5" />
-            Tandai semua dibaca
+            Tandai dibaca
           </Button>
         )}
       </div>
@@ -65,7 +70,7 @@ export default function NotificationsPage() {
           {[1, 2, 3].map(i => (
             <Card key={i} className="p-3 border border-border">
               <div className="flex gap-3">
-                <Skeleton className="w-9 h-9 rounded-full" />
+                <Skeleton className="w-10 h-10 rounded-full flex-shrink-0" />
                 <div className="flex-1 space-y-1.5">
                   <Skeleton className="h-3 w-3/4" />
                   <Skeleton className="h-3 w-1/2" />
@@ -77,20 +82,24 @@ export default function NotificationsPage() {
       )}
 
       {notifications?.length === 0 && (
-        <Card className="p-8 border border-border text-center">
-          <Bell className="w-12 h-12 mx-auto text-muted-foreground/40 mb-3" />
-          <p className="text-sm text-muted-foreground">Belum ada notifikasi</p>
+        <Card className="p-10 border border-border text-center">
+          <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
+            <Bell className="w-7 h-7 text-primary" />
+          </div>
+          <p className="text-sm font-medium mb-1">Belum ada notifikasi</p>
+          <p className="text-xs text-muted-foreground">Notifikasi akan muncul di sini</p>
         </Card>
       )}
 
       <div className="space-y-2">
         {notifications?.map((notif) => {
           const Icon = iconMap[notif.type] || Bell;
-          const color = colorMap[notif.type] || "text-muted-foreground";
+          const colors = colorMap[notif.type] || "text-muted-foreground bg-muted";
+          const [textColor, bgColor] = colors.split(" ");
           return (
             <Card
               key={notif.id}
-              className={`p-3 border border-border hover-elevate cursor-pointer ${!notif.isRead ? "bg-accent/30" : ""}`}
+              className={`p-3.5 border border-border hover-elevate cursor-pointer transition-colors ${!notif.isRead ? "bg-accent/20" : ""}`}
               onClick={() => {
                 if (notif.postId) navigate(`/post/${notif.postId}`);
                 else if (notif.fromUser) navigate(`/profile/${notif.fromUser.username}`);
@@ -98,24 +107,24 @@ export default function NotificationsPage() {
               data-testid={`card-notification-${notif.id}`}
             >
               <div className="flex gap-3 items-start">
-                <div className="relative">
-                  <Avatar className="w-9 h-9">
+                <div className="relative flex-shrink-0">
+                  <Avatar className="w-10 h-10">
                     <AvatarImage src={notif.fromUser?.avatarUrl || undefined} />
-                    <AvatarFallback className="text-xs bg-muted">
+                    <AvatarFallback className="text-xs bg-primary/10 text-primary font-semibold">
                       {notif.fromUser?.displayName?.charAt(0) || "?"}
                     </AvatarFallback>
                   </Avatar>
-                  <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-background flex items-center justify-center`}>
-                    <Icon className={`w-3 h-3 ${color}`} />
+                  <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full ${bgColor} flex items-center justify-center ring-2 ring-background`}>
+                    <Icon className={`w-2.5 h-2.5 ${textColor}`} />
                   </div>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm break-words" data-testid={`text-notification-message-${notif.id}`}>{notif.message}</p>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">
+                  <p className="text-sm break-words leading-relaxed" data-testid={`text-notification-message-${notif.id}`}>{notif.message}</p>
+                  <p className="text-[11px] text-muted-foreground mt-1">
                     {formatDistanceToNow(new Date(notif.createdAt!), { addSuffix: true, locale: idLocale })}
                   </p>
                 </div>
-                {!notif.isRead && <div className="w-2 h-2 rounded-full bg-primary flex-shrink-0 mt-1.5" />}
+                {!notif.isRead && <div className="w-2 h-2 rounded-full bg-primary flex-shrink-0 mt-2" />}
               </div>
             </Card>
           );

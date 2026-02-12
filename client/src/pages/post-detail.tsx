@@ -19,10 +19,10 @@ export default function PostDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="max-w-xl mx-auto px-4 py-4 space-y-4">
+      <div className="max-w-2xl mx-auto px-4 py-5 space-y-4">
         <Card className="p-4 border border-border">
           <div className="flex gap-3">
-            <Skeleton className="w-10 h-10 rounded-full" />
+            <Skeleton className="w-10 h-10 rounded-full flex-shrink-0" />
             <div className="flex-1 space-y-2">
               <Skeleton className="h-4 w-32" />
               <Skeleton className="h-3 w-full" />
@@ -36,9 +36,9 @@ export default function PostDetailPage() {
 
   if (!post) {
     return (
-      <div className="max-w-xl mx-auto px-4 py-8 text-center">
-        <p className="text-sm text-muted-foreground">Postingan tidak ditemukan</p>
-        <Button variant="ghost" className="mt-4" onClick={() => navigate("/")} data-testid="button-back-home">
+      <div className="max-w-2xl mx-auto px-4 py-10 text-center">
+        <p className="text-sm text-muted-foreground mb-4">Postingan tidak ditemukan</p>
+        <Button variant="ghost" onClick={() => navigate("/")} data-testid="button-back-home">
           <ArrowLeft className="w-4 h-4 mr-2" /> Kembali
         </Button>
       </div>
@@ -46,7 +46,7 @@ export default function PostDetailPage() {
   }
 
   return (
-    <div className="max-w-xl mx-auto px-4 py-4 space-y-4">
+    <div className="max-w-2xl mx-auto px-4 py-5 space-y-4">
       <Button variant="ghost" size="sm" onClick={() => navigate("/")} data-testid="button-back">
         <ArrowLeft className="w-4 h-4 mr-1.5" /> Kembali
       </Button>
