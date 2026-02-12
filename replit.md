@@ -4,6 +4,9 @@
 Ruang Luka is an Indonesian online confessional/venting social platform where users can share their stories, feelings, and thoughts either openly or anonymously. Built with Express + React + PostgreSQL (Supabase).
 
 ## Recent Changes
+- 2026-02-12: Added Vercel deployment support (serverless API, static frontend build)
+- 2026-02-12: WebSocket falls back to polling (15s interval) for Vercel compatibility
+- 2026-02-12: Added /api/notifications/unread-count polling endpoint
 - 2026-02-12: Migrated database from Replit PostgreSQL to Supabase with SSL
 - 2026-02-12: Fixed TypeScript errors (Express 5 params typing, drizzle-zod schema types)
 - 2026-02-12: Database connection uses SUPABASE_DATABASE_URL env var (falls back to DATABASE_URL)
