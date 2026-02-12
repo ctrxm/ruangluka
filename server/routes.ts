@@ -82,20 +82,21 @@ async function requireAdmin(req: Request, res: Response, next: NextFunction) {
   next();
 }
 
-export async function registerRoutes(httpServer: Server, app: Express): Promise<Server> {
+export async function registerRoutes(httpServer: Server, app: Express, options?: { serverless?: boolean }): Promise<Server> {
   const isProduction = process.env.NODE_ENV === "production";
+  const isServerless = options?.serverless || !!process.env.VERCEL;
   const sessionMiddleware = session({
     store: new PgStore({ pool, createTableIfMissing: true }),
     secret: process.env.SESSION_SECRET || "ruangluka-secret-key-change-in-production",
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: isProduction,
+      secure: isProduction || isServerless,
       httpOnly: true,
       maxAge: 30 * 24 * 60 * 60 * 1000,
-      sameSite: "lax",
+      sameSite: isServerless ? "none" as const : "lax" as const,
     },
-    proxy: isProduction,
+    proxy: isProduction || isServerless,
   });
 
   app.use(sessionMiddleware);
@@ -394,50 +395,51 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     res.json(setting);
   });
 
-  // WebSocket
-  const wss = new WebSocketServer({ server: httpServer, path: "/ws" });
+  if (!isServerless) {
+    const wss = new WebSocketServer({ server: httpServer, path: "/ws" });
 
-  wss.on("connection", async (ws, req) => {
-    try {
-      const mockRes = { getHeader: () => {}, setHeader: () => {}, end: () => {} } as any;
-      await new Promise<void>((resolve, reject) => {
-        sessionMiddleware(req as any, mockRes, (err?: any) => {
-          if (err) reject(err);
-          else resolve();
+    wss.on("connection", async (ws, req) => {
+      try {
+        const mockRes = { getHeader: () => {}, setHeader: () => {}, end: () => {} } as any;
+        await new Promise<void>((resolve, reject) => {
+          sessionMiddleware(req as any, mockRes, (err?: any) => {
+            if (err) reject(err);
+            else resolve();
+          });
         });
-      });
 
-      const userId = (req as any).session?.userId;
-      if (!userId) {
+        const userId = (req as any).session?.userId;
+        if (!userId) {
+          ws.close();
+          return;
+        }
+
+        if (!wsClients.has(userId)) wsClients.set(userId, new Set());
+        wsClients.get(userId)!.add(ws);
+
+        const unreadCount = await storage.getUnreadNotificationCount(userId);
+        ws.send(JSON.stringify({ type: "unread_count", count: unreadCount }));
+
+        ws.on("close", () => {
+          const clients = wsClients.get(userId);
+          if (clients) {
+            clients.delete(ws);
+            if (clients.size === 0) wsClients.delete(userId);
+          }
+        });
+
+        ws.on("error", () => {
+          const clients = wsClients.get(userId);
+          if (clients) {
+            clients.delete(ws);
+            if (clients.size === 0) wsClients.delete(userId);
+          }
+        });
+      } catch (err) {
         ws.close();
-        return;
       }
-
-      if (!wsClients.has(userId)) wsClients.set(userId, new Set());
-      wsClients.get(userId)!.add(ws);
-
-      const unreadCount = await storage.getUnreadNotificationCount(userId);
-      ws.send(JSON.stringify({ type: "unread_count", count: unreadCount }));
-
-      ws.on("close", () => {
-        const clients = wsClients.get(userId);
-        if (clients) {
-          clients.delete(ws);
-          if (clients.size === 0) wsClients.delete(userId);
-        }
-      });
-
-      ws.on("error", () => {
-        const clients = wsClients.get(userId);
-        if (clients) {
-          clients.delete(ws);
-          if (clients.size === 0) wsClients.delete(userId);
-        }
-      });
-    } catch (err) {
-      ws.close();
-    }
-  });
+    });
+  }
 
   return httpServer;
 }

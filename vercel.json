@@ -2,11 +2,13 @@
   "buildCommand": "npm run build:vercel",
   "outputDirectory": "dist/public",
   "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/[...path]" },
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ],
   "functions": {
     "api/[...path].ts": {
-      "maxDuration": 30
+      "maxDuration": 30,
+      "includeFiles": "server/**,shared/**"
     }
   }
 }
