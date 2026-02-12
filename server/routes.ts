@@ -83,12 +83,19 @@ async function requireAdmin(req: Request, res: Response, next: NextFunction) {
 }
 
 export async function registerRoutes(httpServer: Server, app: Express): Promise<Server> {
+  const isProduction = process.env.NODE_ENV === "production";
   const sessionMiddleware = session({
     store: new PgStore({ pool, createTableIfMissing: true }),
     secret: process.env.SESSION_SECRET || "ruangluka-secret-key-change-in-production",
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: false, httpOnly: true, maxAge: 30 * 24 * 60 * 60 * 1000 },
+    cookie: {
+      secure: isProduction,
+      httpOnly: true,
+      maxAge: 30 * 24 * 60 * 60 * 1000,
+      sameSite: "lax",
+    },
+    proxy: isProduction,
   });
 
   app.use(sessionMiddleware);
@@ -311,6 +318,11 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
   app.post("/api/notifications/read-all", requireAuth, async (req, res) => {
     await storage.markAllNotificationsRead(req.session.userId!);
     res.json({ message: "Semua notifikasi ditandai dibaca" });
+  });
+
+  app.get("/api/notifications/unread-count", requireAuth, async (req, res) => {
+    const count = await storage.getUnreadNotificationCount(req.session.userId!);
+    res.json({ count });
   });
 
   // Search
