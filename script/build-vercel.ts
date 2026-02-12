@@ -1,6 +1,6 @@
 import { build as viteBuild } from "vite";
 import { build as esbuild } from "esbuild";
-import { rm, unlink, readdir } from "fs/promises";
+import { rm, readdir } from "fs/promises";
 
 async function buildVercel() {
   await rm("dist", { recursive: true, force: true });
@@ -30,12 +30,8 @@ async function buildVercel() {
     console.log(`   Bundled: ${entryPoint} → ${outfile}`);
   }
 
-  for (const file of apiFiles) {
-    await unlink(`api/${file}`);
-    console.log(`   Removed source: api/${file}`);
-  }
-
   console.log("Vercel build complete!");
+  console.log("Note: .ts source files kept intact for Vercel function detection.");
 }
 
 buildVercel().catch((err) => {
