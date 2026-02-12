@@ -13,12 +13,14 @@ import { registerSchema, loginSchema, insertPostSchema, insertCommentSchema, ins
 
 const PgStore = ConnectPgSimple(session);
 
+const isVercelEnv = !!process.env.VERCEL;
+const uploadDir = isVercelEnv ? "/tmp/uploads" : path.join(process.cwd(), "client", "public", "uploads");
+
 const upload = multer({
   storage: multer.diskStorage({
     destination: (_req, _file, cb) => {
-      const dir = path.join(process.cwd(), "client", "public", "uploads");
-      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-      cb(null, dir);
+      if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+      cb(null, uploadDir);
     },
     filename: (_req, file, cb) => {
       const ext = path.extname(file.originalname);
