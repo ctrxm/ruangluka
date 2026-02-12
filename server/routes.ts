@@ -9,7 +9,7 @@ import fs from "fs";
 import bcrypt from "bcryptjs";
 import { storage } from "./storage";
 import { pool } from "./db";
-import { registerSchema, loginSchema, insertPostSchema, insertCommentSchema, insertAdSchema, updateProfileSchema } from "../shared/schema";
+import { registerSchema, loginSchema, insertPostSchema, insertCommentSchema, insertAdSchema, updateProfileSchema, insertReactionSchema, insertReportSchema, insertMessageSchema, REACTION_TYPES } from "../shared/schema";
 
 const PgStore = ConnectPgSimple(session);
 
@@ -409,6 +409,136 @@ export async function registerRoutes(httpServer: Server, app: Express, options?:
     const { key, value } = req.body;
     const setting = await storage.upsertSetting(key, value);
     res.json(setting);
+  });
+
+  // Reactions
+  app.post("/api/posts/:id/react", requireAuth, async (req, res) => {
+    try {
+      const postId = parseInt(paramStr(req.params.id));
+      const data = insertReactionSchema.parse(req.body);
+      const result = await storage.toggleReaction(req.session.userId!, postId, data.type);
+      if (result.added) {
+        const post = await storage.getPost(postId);
+        if (post && post.userId !== req.session.userId) {
+          const currentUser = await storage.getUserById(req.session.userId!);
+          const labels: Record<string, string> = { peluk: "Peluk", semangat: "Semangat", ikut_sedih: "Ikut Sedih", bangga: "Bangga" };
+          await storage.createNotification({
+            userId: post.userId,
+            type: "reaction",
+            fromUserId: req.session.userId,
+            postId,
+            message: `${currentUser?.displayName} memberikan reaksi "${labels[data.type]}" pada curhat kamu`,
+          });
+          sendToUser(post.userId, { type: "notification" });
+        }
+      }
+      res.json(result);
+    } catch (err: any) {
+      res.status(400).json({ message: err.message });
+    }
+  });
+
+  // Bookmarks
+  app.post("/api/posts/:id/bookmark", requireAuth, async (req, res) => {
+    const postId = parseInt(paramStr(req.params.id));
+    const bookmarked = await storage.toggleBookmark(req.session.userId!, postId);
+    res.json({ bookmarked });
+  });
+
+  app.get("/api/bookmarks", requireAuth, async (req, res) => {
+    const posts = await storage.getBookmarkedPosts(req.session.userId!);
+    res.json(posts);
+  });
+
+  // Reports
+  app.post("/api/posts/:id/report", requireAuth, async (req, res) => {
+    try {
+      const postId = parseInt(paramStr(req.params.id));
+      const data = insertReportSchema.parse(req.body);
+      const report = await storage.createReport(req.session.userId!, postId, data.reason);
+      res.json(report);
+    } catch (err: any) {
+      res.status(400).json({ message: err.message });
+    }
+  });
+
+  app.get("/api/admin/reports", requireAdmin, async (req, res) => {
+    const status = req.query.status as string | undefined;
+    const reportList = await storage.getReports(status);
+    res.json(reportList);
+  });
+
+  app.post("/api/admin/reports/:id/status", requireAdmin, async (req, res) => {
+    try {
+      const reportId = parseInt(paramStr(req.params.id));
+      const { status } = req.body;
+      const report = await storage.updateReportStatus(reportId, status);
+      res.json(report);
+    } catch (err: any) {
+      res.status(400).json({ message: err.message });
+    }
+  });
+
+  // Trending
+  app.get("/api/trending", async (_req, res) => {
+    const topics = await storage.getTrendingTopics();
+    res.json(topics);
+  });
+
+  // Direct Messages
+  app.get("/api/conversations", requireAuth, async (req, res) => {
+    const convos = await storage.getUserConversations(req.session.userId!);
+    res.json(convos);
+  });
+
+  app.post("/api/conversations", requireAuth, async (req, res) => {
+    try {
+      const { userId: targetUserId } = req.body;
+      if (!targetUserId || targetUserId === req.session.userId) {
+        return res.status(400).json({ message: "ID pengguna tidak valid" });
+      }
+      const convo = await storage.getOrCreateConversation(req.session.userId!, targetUserId);
+      res.json(convo);
+    } catch (err: any) {
+      res.status(400).json({ message: err.message });
+    }
+  });
+
+  app.get("/api/conversations/:id/messages", requireAuth, async (req, res) => {
+    try {
+      const conversationId = parseInt(paramStr(req.params.id));
+      const msgs = await storage.getConversationMessages(conversationId, req.session.userId!);
+      res.json(msgs);
+    } catch (err: any) {
+      res.status(403).json({ message: err.message });
+    }
+  });
+
+  app.post("/api/conversations/:id/messages", requireAuth, async (req, res) => {
+    try {
+      const conversationId = parseInt(paramStr(req.params.id));
+      const data = insertMessageSchema.parse(req.body);
+      const msg = await storage.sendMessage(conversationId, req.session.userId!, data.content);
+      sendToUser(msg.senderId, { type: "message", conversationId });
+      const members = await storage.getUserConversations(req.session.userId!);
+      const convo = members.find(c => c.id === conversationId);
+      if (convo) {
+        sendToUser(convo.otherUser.id, { type: "message", conversationId });
+      }
+      res.json(msg);
+    } catch (err: any) {
+      res.status(400).json({ message: err.message });
+    }
+  });
+
+  app.post("/api/conversations/:id/read", requireAuth, async (req, res) => {
+    try {
+      const conversationId = parseInt(paramStr(req.params.id));
+      await storage.markMessagesRead(conversationId, req.session.userId!);
+      res.json({ success: true });
+    } catch (err: any) {
+      res.status(400).json({ message: err.message });
+    }
   });
 
   if (!isServerless) {

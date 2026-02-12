@@ -8,25 +8,32 @@ import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Send, UserCircle, Loader2, EyeOff } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Send, UserCircle, Loader2, EyeOff, Tag } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { POST_CATEGORIES } from "@shared/schema";
 
 export function CreatePost() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [content, setContent] = useState("");
   const [isAnonymous, setIsAnonymous] = useState(false);
+  const [category, setCategory] = useState<string>("");
   const [isFocused, setIsFocused] = useState(false);
+  const [showCategories, setShowCategories] = useState(false);
 
   const mutation = useMutation({
-    mutationFn: (data: { content: string; isAnonymous: boolean }) =>
+    mutationFn: (data: { content: string; isAnonymous: boolean; category?: string }) =>
       apiRequest("POST", "/api/posts", data),
     onSuccess: () => {
       setContent("");
       setIsAnonymous(false);
+      setCategory("");
       setIsFocused(false);
+      setShowCategories(false);
       queryClient.invalidateQueries({ queryKey: ["/api/feed"] });
       queryClient.invalidateQueries({ queryKey: ["/api/posts"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/trending"] });
       toast({ title: "Curhat berhasil diposting!" });
     },
     onError: (err: any) => {
@@ -60,23 +67,71 @@ export function CreatePost() {
             className="resize-none border-0 text-sm focus-visible:ring-0 min-h-[60px]"
             data-testid="input-post-content"
           />
+
+          {category && (
+            <div className="mt-2">
+              <Badge variant="secondary" className="text-xs gap-1" data-testid="badge-selected-category">
+                <Tag className="w-3 h-3" />
+                {category}
+                <button
+                  onClick={() => setCategory("")}
+                  className="ml-1 text-muted-foreground"
+                  data-testid="button-remove-category"
+                >
+                  x
+                </button>
+              </Badge>
+            </div>
+          )}
+
+          {showCategories && !category && (
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {POST_CATEGORIES.map((cat) => (
+                <Badge
+                  key={cat}
+                  variant="outline"
+                  className="text-xs cursor-pointer"
+                  onClick={() => {
+                    setCategory(cat);
+                    setShowCategories(false);
+                  }}
+                  data-testid={`badge-category-${cat}`}
+                >
+                  {cat}
+                </Badge>
+              ))}
+            </div>
+          )}
+
           {(isFocused || content) && (
             <div className="flex items-center justify-between gap-2 mt-2 pt-3 border-t border-border">
-              <div className="flex items-center gap-2">
-                <Switch
-                  id="anonymous"
-                  checked={isAnonymous}
-                  onCheckedChange={setIsAnonymous}
-                  data-testid="switch-anonymous"
-                />
-                <Label htmlFor="anonymous" className="text-xs text-muted-foreground cursor-pointer flex items-center gap-1.5">
-                  <EyeOff className="w-3 h-3" />
-                  Anonim
-                </Label>
+              <div className="flex items-center gap-3 flex-wrap">
+                <div className="flex items-center gap-2">
+                  <Switch
+                    id="anonymous"
+                    checked={isAnonymous}
+                    onCheckedChange={setIsAnonymous}
+                    data-testid="switch-anonymous"
+                  />
+                  <Label htmlFor="anonymous" className="text-xs text-muted-foreground cursor-pointer flex items-center gap-1.5">
+                    <EyeOff className="w-3 h-3" />
+                    Anonim
+                  </Label>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowCategories(!showCategories)}
+                  className="gap-1.5 text-muted-foreground"
+                  data-testid="button-toggle-categories"
+                >
+                  <Tag className="w-3.5 h-3.5" />
+                  <span className="text-xs">Kategori</span>
+                </Button>
               </div>
               <Button
                 size="sm"
-                onClick={() => mutation.mutate({ content, isAnonymous })}
+                onClick={() => mutation.mutate({ content, isAnonymous, category: category || undefined })}
                 disabled={!content.trim() || mutation.isPending}
                 className="gap-1.5"
                 data-testid="button-submit-post"

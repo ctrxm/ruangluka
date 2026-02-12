@@ -19,7 +19,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Camera, ArrowLeft, Calendar, Loader2, UserCheck, UserPlus } from "lucide-react";
+import { Camera, ArrowLeft, Calendar, Loader2, UserCheck, UserPlus, MessageCircle, Heart, Flame } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { id as idLocale } from "date-fns/locale";
@@ -175,28 +175,44 @@ export default function ProfilePage() {
                   Edit Profil
                 </Button>
               ) : currentUser ? (
-                <Button
-                  size="sm"
-                  variant={profile.isFollowing ? "outline" : "default"}
-                  onClick={() => followMutation.mutate()}
-                  disabled={followMutation.isPending}
-                  className="gap-1.5"
-                  data-testid="button-follow"
-                >
-                  {followMutation.isPending ? (
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  ) : profile.isFollowing ? (
-                    <>
-                      <UserCheck className="w-3.5 h-3.5" />
-                      Mengikuti
-                    </>
-                  ) : (
-                    <>
-                      <UserPlus className="w-3.5 h-3.5" />
-                      Ikuti
-                    </>
-                  )}
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={async () => {
+                      const res = await apiRequest("POST", "/api/conversations", { userId: profile.id });
+                      const convo = await res.json();
+                      navigate("/messages");
+                    }}
+                    className="gap-1.5"
+                    data-testid="button-send-dm"
+                  >
+                    <MessageCircle className="w-3.5 h-3.5" />
+                    Pesan
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant={profile.isFollowing ? "outline" : "default"}
+                    onClick={() => followMutation.mutate()}
+                    disabled={followMutation.isPending}
+                    className="gap-1.5"
+                    data-testid="button-follow"
+                  >
+                    {followMutation.isPending ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : profile.isFollowing ? (
+                      <>
+                        <UserCheck className="w-3.5 h-3.5" />
+                        Mengikuti
+                      </>
+                    ) : (
+                      <>
+                        <UserPlus className="w-3.5 h-3.5" />
+                        Ikuti
+                      </>
+                    )}
+                  </Button>
+                </div>
               ) : null}
             </div>
           </div>
@@ -221,6 +237,21 @@ export default function ProfilePage() {
               <strong className="font-bold">{profile.postsCount}</strong>{" "}
               <span className="text-muted-foreground text-xs">Postingan</span>
             </span>
+          </div>
+
+          <div className="flex gap-4 mt-4 justify-center sm:justify-start flex-wrap">
+            <div className="flex items-center gap-1.5 text-sm" data-testid="stat-total-support">
+              <Heart className="w-4 h-4 text-red-500" />
+              <strong className="font-bold">{profile.totalSupport}</strong>
+              <span className="text-muted-foreground text-xs">Dukungan</span>
+            </div>
+            {profile.streak > 0 && (
+              <div className="flex items-center gap-1.5 text-sm" data-testid="stat-streak">
+                <Flame className="w-4 h-4 text-orange-500" />
+                <strong className="font-bold">{profile.streak}</strong>
+                <span className="text-muted-foreground text-xs">hari streak</span>
+              </div>
+            )}
           </div>
         </div>
       </Card>

@@ -17,7 +17,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Home, Bell, Shield, User, LogOut, Loader2, Compass } from "lucide-react";
+import { Home, Bell, Shield, User, LogOut, Loader2, Compass, MessageCircle, Bookmark } from "lucide-react";
 import NotFound from "@/pages/not-found";
 import AuthPage from "@/pages/auth";
 import FeedPage from "@/pages/feed";
@@ -26,6 +26,8 @@ import NotificationsPage from "@/pages/notifications";
 import ExplorePage from "@/pages/explore";
 import AdminPage from "@/pages/admin";
 import PostDetailPage from "@/pages/post-detail";
+import MessagesPage from "@/pages/messages";
+import BookmarksPage from "@/pages/bookmarks";
 
 function MobileNav() {
   const [location, navigate] = useLocation();
@@ -35,6 +37,7 @@ function MobileNav() {
   const items = [
     { icon: Home, path: "/", label: "Beranda" },
     { icon: Compass, path: "/explore", label: "Jelajahi" },
+    { icon: MessageCircle, path: "/messages", label: "Pesan" },
     { icon: Bell, path: "/notifications", label: "Notifikasi", badge: unreadCount },
     { icon: User, path: `/profile/${user?.username}`, label: "Profil" },
   ];
@@ -89,6 +92,8 @@ function Header() {
           {[
             { icon: Home, path: "/", label: "Beranda" },
             { icon: Compass, path: "/explore", label: "Jelajahi" },
+            { icon: MessageCircle, path: "/messages", label: "Pesan" },
+            { icon: Bookmark, path: "/bookmarks", label: "Simpan" },
             { icon: Bell, path: "/notifications", label: "Notifikasi", badge: unreadCount },
           ].map(({ icon: Icon, path, label, badge }) => {
             const isActive = location === path;
@@ -183,6 +188,8 @@ function AppRoutes() {
             <Route path="/notifications" component={NotificationsPage} />
             <Route path="/profile/:username" component={ProfilePage} />
             <Route path="/post/:id" component={PostDetailPage} />
+            <Route path="/messages" component={MessagesPage} />
+            <Route path="/bookmarks" component={BookmarksPage} />
             <Route path="/admin" component={AdminPage} />
             <Route component={NotFound} />
           </Switch>
