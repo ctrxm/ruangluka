@@ -4,11 +4,13 @@
 Ruang Luka is an Indonesian online confessional/venting social platform where users can share their stories, feelings, and thoughts either openly or anonymously. Built with Express + React + PostgreSQL (Supabase).
 
 ## Recent Changes
+- 2026-02-12: Complete UI redesign - deep purple/violet color scheme (262 hue), dark mode default
+- 2026-02-12: Redesigned auth, feed, explore, notifications, profile, post-detail pages
+- 2026-02-12: Redesigned post-card, create-post, ad-banner components
+- 2026-02-12: Updated App.tsx with new header, mobile nav, gradient text effects
 - 2026-02-12: Added Vercel deployment support (serverless API, static frontend build)
 - 2026-02-12: WebSocket falls back to polling (15s interval) for Vercel compatibility
-- 2026-02-12: Added /api/notifications/unread-count polling endpoint
 - 2026-02-12: Migrated database from Replit PostgreSQL to Supabase with SSL
-- 2026-02-12: Fixed TypeScript errors (Express 5 params typing, drizzle-zod schema types)
 - 2026-02-12: Database connection uses SUPABASE_DATABASE_URL env var (falls back to DATABASE_URL)
 
 ## Architecture
@@ -30,8 +32,9 @@ Ruang Luka is an Indonesian online confessional/venting social platform where us
 - Admin panel: user management, ads management, site settings
 - Ad system (text/image ads, Google AdSense style)
 - Search users and posts
-- Dark/light theme toggle
-- Mobile-responsive design
+- Dark mode default with light mode toggle
+- Mobile-responsive design with bottom nav
+- Gradient text effects and ambient background blurs
 
 ## Database
 - Supabase PostgreSQL with Drizzle ORM
