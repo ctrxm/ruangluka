@@ -182,7 +182,12 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createPost(userId: number, data: InsertPost): Promise<Post> {
-    const [post] = await db.insert(posts).values({ ...data, userId }).returning();
+    const [post] = await db.insert(posts).values({
+      content: data.content,
+      isAnonymous: data.isAnonymous,
+      originalPostId: data.originalPostId,
+      userId,
+    }).returning();
     return post;
   }
 
@@ -241,7 +246,11 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createComment(userId: number, data: InsertComment): Promise<Comment> {
-    const [comment] = await db.insert(comments).values({ ...data, userId }).returning();
+    const [comment] = await db.insert(comments).values({
+      content: data.content,
+      postId: data.postId,
+      userId,
+    }).returning();
     return comment;
   }
 
@@ -313,7 +322,14 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createAd(data: InsertAd): Promise<Ad> {
-    const [ad] = await db.insert(ads).values(data).returning();
+    const [ad] = await db.insert(ads).values({
+      title: data.title,
+      type: data.type,
+      content: data.content,
+      imageUrl: data.imageUrl,
+      linkUrl: data.linkUrl,
+      isActive: data.isActive,
+    }).returning();
     return ad;
   }
 

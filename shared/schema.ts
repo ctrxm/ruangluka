@@ -77,7 +77,6 @@ export const siteSettings = pgTable("site_settings", {
   value: text("value").notNull(),
 });
 
-export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true, isVerified: true, isAdmin: true });
 export const loginSchema = z.object({ email: z.string().email(), password: z.string().min(6) });
 export const registerSchema = z.object({
   email: z.string().email(),
@@ -85,9 +84,23 @@ export const registerSchema = z.object({
   displayName: z.string().min(1).max(50),
   password: z.string().min(6),
 });
-export const insertPostSchema = createInsertSchema(posts).omit({ id: true, createdAt: true, userId: true });
-export const insertCommentSchema = createInsertSchema(comments).omit({ id: true, createdAt: true, userId: true });
-export const insertAdSchema = createInsertSchema(ads).omit({ id: true, createdAt: true });
+export const insertPostSchema = z.object({
+  content: z.string().min(1),
+  isAnonymous: z.boolean().optional().default(false),
+  originalPostId: z.number().optional(),
+});
+export const insertCommentSchema = z.object({
+  postId: z.number(),
+  content: z.string().min(1),
+});
+export const insertAdSchema = z.object({
+  type: z.string().default("text"),
+  title: z.string().min(1),
+  content: z.string().optional(),
+  imageUrl: z.string().optional(),
+  linkUrl: z.string().optional(),
+  isActive: z.boolean().optional().default(true),
+});
 export const updateProfileSchema = z.object({
   displayName: z.string().min(1).max(50).optional(),
   bio: z.string().max(500).optional(),
@@ -95,7 +108,7 @@ export const updateProfileSchema = z.object({
 });
 
 export type User = typeof users.$inferSelect;
-export type InsertUser = z.infer<typeof insertUserSchema>;
+export type InsertUser = { email: string; username: string; displayName: string; password: string };
 export type Post = typeof posts.$inferSelect;
 export type InsertPost = z.infer<typeof insertPostSchema>;
 export type Comment = typeof comments.$inferSelect;

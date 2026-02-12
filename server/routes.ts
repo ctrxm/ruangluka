@@ -50,6 +50,10 @@ function sendToUser(userId: number, data: any) {
   }
 }
 
+function paramStr(val: string | string[]): string {
+  return Array.isArray(val) ? val[0] : val;
+}
+
 function requireAuth(req: Request, res: Response, next: NextFunction) {
   if (!req.session.userId) return res.status(401).json({ message: "Tidak terautentikasi" });
   next();
@@ -158,19 +162,19 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
 
   // User routes
   app.get("/api/users/:username", async (req, res) => {
-    const profile = await storage.getUserProfile(req.params.username, req.session.userId);
+    const profile = await storage.getUserProfile(paramStr(req.params.username), req.session.userId);
     if (!profile) return res.status(404).json({ message: "User tidak ditemukan" });
     res.json({ ...profile, password: undefined });
   });
 
   app.get("/api/users/:username/posts", async (req, res) => {
-    const posts = await storage.getUserPosts(req.params.username, req.session.userId);
+    const posts = await storage.getUserPosts(paramStr(req.params.username), req.session.userId);
     res.json(posts);
   });
 
   app.post("/api/users/:id/follow", requireAuth, async (req, res) => {
     try {
-      const targetId = parseInt(req.params.id);
+      const targetId = parseInt(paramStr(req.params.id));
       const followed = await storage.toggleFollow(req.session.userId!, targetId);
       if (followed) {
         const currentUser = await storage.getUserById(req.session.userId!);
@@ -200,7 +204,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
   });
 
   app.get("/api/posts/:id", async (req, res) => {
-    const post = await storage.getPost(parseInt(req.params.id), req.session.userId);
+    const post = await storage.getPost(parseInt(paramStr(req.params.id)), req.session.userId);
     if (!post) return res.status(404).json({ message: "Post tidak ditemukan" });
     res.json(post);
   });
@@ -216,18 +220,19 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
   });
 
   app.delete("/api/posts/:id", requireAuth, async (req, res) => {
-    const post = await storage.getPost(parseInt(req.params.id));
+    const postId = parseInt(paramStr(req.params.id));
+    const post = await storage.getPost(postId);
     if (!post) return res.status(404).json({ message: "Post tidak ditemukan" });
     const user = await storage.getUserById(req.session.userId!);
     if (post.userId !== req.session.userId && !user?.isAdmin) {
       return res.status(403).json({ message: "Tidak diizinkan" });
     }
-    await storage.deletePost(parseInt(req.params.id));
+    await storage.deletePost(postId);
     res.json({ message: "Post dihapus" });
   });
 
   app.post("/api/posts/:id/like", requireAuth, async (req, res) => {
-    const postId = parseInt(req.params.id);
+    const postId = parseInt(paramStr(req.params.id));
     const liked = await storage.toggleLike(req.session.userId!, postId);
     if (liked) {
       const post = await storage.getPost(postId);
@@ -248,7 +253,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
 
   app.post("/api/posts/:id/repost", requireAuth, async (req, res) => {
     try {
-      const postId = parseInt(req.params.id);
+      const postId = parseInt(paramStr(req.params.id));
       const repost = await storage.repostPost(req.session.userId!, postId);
       const originalPost = await storage.getPost(postId);
       if (originalPost && originalPost.userId !== req.session.userId) {
@@ -270,13 +275,13 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
 
   // Comments
   app.get("/api/posts/:id/comments", async (req, res) => {
-    const comments = await storage.getPostComments(parseInt(req.params.id));
+    const comments = await storage.getPostComments(parseInt(paramStr(req.params.id)));
     res.json(comments);
   });
 
   app.post("/api/posts/:id/comments", requireAuth, async (req, res) => {
     try {
-      const postId = parseInt(req.params.id);
+      const postId = parseInt(paramStr(req.params.id));
       const data = insertCommentSchema.parse({ ...req.body, postId });
       const comment = await storage.createComment(req.session.userId!, data);
       const post = await storage.getPost(postId);
@@ -310,7 +315,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
 
   // Search
   app.get("/api/search/:query", async (req, res) => {
-    const results = await storage.searchUsersAndPosts(req.params.query, req.session.userId);
+    const results = await storage.searchUsersAndPosts(paramStr(req.params.query), req.session.userId);
     res.json(results);
   });
 
@@ -327,17 +332,17 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
   });
 
   app.post("/api/admin/users/:id/verify", requireAdmin, async (req, res) => {
-    const user = await storage.toggleUserVerified(parseInt(req.params.id));
+    const user = await storage.toggleUserVerified(parseInt(paramStr(req.params.id)));
     res.json({ ...user, password: undefined });
   });
 
   app.post("/api/admin/users/:id/admin", requireAdmin, async (req, res) => {
-    const user = await storage.toggleUserAdmin(parseInt(req.params.id));
+    const user = await storage.toggleUserAdmin(parseInt(paramStr(req.params.id)));
     res.json({ ...user, password: undefined });
   });
 
   app.delete("/api/admin/users/:id", requireAdmin, async (req, res) => {
-    await storage.deleteUser(parseInt(req.params.id));
+    await storage.deleteUser(parseInt(paramStr(req.params.id)));
     res.json({ message: "User dihapus" });
   });
 
@@ -357,12 +362,12 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
   });
 
   app.post("/api/admin/ads/:id/toggle", requireAdmin, async (req, res) => {
-    const ad = await storage.toggleAd(parseInt(req.params.id));
+    const ad = await storage.toggleAd(parseInt(paramStr(req.params.id)));
     res.json(ad);
   });
 
   app.delete("/api/admin/ads/:id", requireAdmin, async (req, res) => {
-    await storage.deleteAd(parseInt(req.params.id));
+    await storage.deleteAd(parseInt(paramStr(req.params.id)));
     res.json({ message: "Iklan dihapus" });
   });
 

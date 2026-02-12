@@ -1,14 +1,20 @@
 # Ruang Luka - Platform Curhat Online
 
 ## Overview
-Ruang Luka is an Indonesian online confessional/venting social platform where users can share their stories, feelings, and thoughts either openly or anonymously. Built with Express + React + PostgreSQL.
+Ruang Luka is an Indonesian online confessional/venting social platform where users can share their stories, feelings, and thoughts either openly or anonymously. Built with Express + React + PostgreSQL (Supabase).
+
+## Recent Changes
+- 2026-02-12: Migrated database from Replit PostgreSQL to Supabase with SSL
+- 2026-02-12: Fixed TypeScript errors (Express 5 params typing, drizzle-zod schema types)
+- 2026-02-12: Database connection uses SUPABASE_DATABASE_URL env var (falls back to DATABASE_URL)
 
 ## Architecture
 - **Frontend**: React 18 + Vite + TailwindCSS + Shadcn UI + Wouter routing
-- **Backend**: Express 5 + PostgreSQL + Drizzle ORM + express-session
+- **Backend**: Express 5 + PostgreSQL (Supabase) + Drizzle ORM + express-session
 - **Auth**: Email/password with bcrypt hashing, session-based
 - **Real-time**: WebSocket for notification delivery
 - **File uploads**: Multer for avatar uploads to /uploads/
+- **Database**: Supabase PostgreSQL with SSL, connection via SUPABASE_DATABASE_URL env var
 
 ## Key Features
 - User registration/login with email + password
@@ -25,9 +31,10 @@ Ruang Luka is an Indonesian online confessional/venting social platform where us
 - Mobile-responsive design
 
 ## Database
-- PostgreSQL with Drizzle ORM
+- Supabase PostgreSQL with Drizzle ORM
 - Tables: users, posts, comments, likes, follows, notifications, ads, site_settings
 - Session store: connect-pg-simple
+- Connection: SUPABASE_DATABASE_URL env var with SSL enabled
 
 ## Default Admin Account
 - Email: admin@ruangluka.id
@@ -50,3 +57,8 @@ Ruang Luka is an Indonesian online confessional/venting social platform where us
 - client/src/lib/ - Auth context, theme provider, WebSocket provider, query client
 - server/ - Express backend (routes, storage, db, seed)
 - shared/schema.ts - Database schema and types
+
+## User Preferences
+- Language: Indonesian (Bahasa Indonesia)
+- Deployment target: Vercel (planned)
+- Database: Supabase PostgreSQL
