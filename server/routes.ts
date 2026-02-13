@@ -91,14 +91,14 @@ export async function registerRoutes(httpServer: Server, app: Express, options?:
     pool,
     tableName: "session",
     schemaName: "public",
-    pruneSessionInterval: 60 * 15,
+    createTableIfMissing: true,
     errorLog: console.error.bind(console),
   };
 
-  if (isServerless) {
-    pgStoreOptions.createTableIfMissing = false;
+  if (!isServerless) {
+    pgStoreOptions.pruneSessionInterval = 60 * 15;
   } else {
-    pgStoreOptions.createTableIfMissing = true;
+    pgStoreOptions.pruneSessionInterval = false;
   }
 
   const sessionMiddleware = session({
@@ -110,7 +110,7 @@ export async function registerRoutes(httpServer: Server, app: Express, options?:
       secure: isProduction || isServerless,
       httpOnly: true,
       maxAge: 30 * 24 * 60 * 60 * 1000,
-      sameSite: isServerless ? "none" as const : "lax" as const,
+      sameSite: "lax" as const,
     },
     proxy: isProduction || isServerless,
   });

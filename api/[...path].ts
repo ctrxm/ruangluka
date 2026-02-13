@@ -37,21 +37,36 @@ async function ensureInitialized() {
   if (initPromise) return initPromise;
 
   initPromise = (async () => {
-    const { expressApp, httpServer } = createApp();
+    try {
+      const { expressApp, httpServer } = createApp();
 
-    await registerRoutes(httpServer, expressApp, { serverless: true });
-    await seedDatabase();
+      expressApp.get("/api/health", (_req, res) => {
+        res.json({ status: "ok", timestamp: new Date().toISOString() });
+      });
 
-    expressApp.use((err: any, _req: Request, res: Response, next: NextFunction) => {
-      const status = err.status || err.statusCode || 500;
-      const message = err.message || "Internal Server Error";
-      console.error("Express error:", err);
-      if (res.headersSent) return next(err);
-      return res.status(status).json({ message });
-    });
+      await registerRoutes(httpServer, expressApp, { serverless: true });
 
-    app = expressApp;
-    initialized = true;
+      try {
+        await seedDatabase();
+      } catch (seedErr) {
+        console.error("Seed failed (non-fatal):", seedErr);
+      }
+
+      expressApp.use((err: any, _req: Request, res: Response, next: NextFunction) => {
+        const status = err.status || err.statusCode || 500;
+        const message = err.message || "Internal Server Error";
+        console.error("Express error:", err);
+        if (res.headersSent) return next(err);
+        return res.status(status).json({ message });
+      });
+
+      app = expressApp;
+      initialized = true;
+    } catch (err) {
+      console.error("Init failed:", err);
+      initPromise = null;
+      throw err;
+    }
   })();
 
   return initPromise;
@@ -60,6 +75,18 @@ async function ensureInitialized() {
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     await ensureInitialized();
+
+    if (req.url && !req.url.startsWith("/api")) {
+      const pathParam = req.query.path;
+      if (pathParam) {
+        const pathSegments = Array.isArray(pathParam) ? pathParam : [pathParam];
+        const rawUrl = req.url || "";
+        const qIdx = rawUrl.indexOf("?");
+        const queryString = qIdx >= 0 ? rawUrl.substring(qIdx) : "";
+        req.url = "/api/" + pathSegments.join("/") + queryString;
+      }
+    }
+
     return app!(req as any, res as any);
   } catch (err: any) {
     console.error("Serverless handler error:", err);
